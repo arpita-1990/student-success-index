@@ -7,7 +7,7 @@
 <style>
   * { box-sizing: border-box; }
   body { margin: 0; font-family: 'Segoe UI', Arial, sans-serif; background: #f4f7fb; color: #18212f; }
-  .wrap { max-width: 1400px; margin: 0 auto; padding: 24px; }
+  .wrap { max-width: 1500px; margin: 0 auto; padding: 24px; }
   .hero { background: linear-gradient(135deg, #1B2A4A, #23486A); color: white; border-radius: 16px; padding: 22px 24px; box-shadow: 0 10px 24px rgba(0,0,0,.12); }
   .hero h1 { margin: 0 0 8px; color: #F5A623; font-size: 1.7rem; }
   .hero p { margin: 6px 0; font-size: 0.95rem; line-height: 1.55; color: #E5EEF8; }
@@ -18,62 +18,119 @@
   .section { background: white; border-radius: 14px; padding: 16px; box-shadow: 0 2px 12px rgba(20,35,60,.08); margin-top: 18px; }
   .section h2 { margin: 0 0 6px; color: #1B2A4A; font-size: 1.1rem; }
   .section p { margin: 0 0 10px; color: #5b6472; font-size: 0.9rem; line-height: 1.55; }
-  .map-toolbar { display:flex; flex-wrap:wrap; align-items:center; gap:12px; margin: 8px 0 8px; }
-  .map-control-label { font-size: 0.88rem; font-weight: 600; color: #374151; }
-  .map-controls { display:flex; flex-wrap:wrap; gap:10px; }
-  .metric-btn { border:1px solid #CBD5E1; background: linear-gradient(180deg, #FFFFFF, #F3F4F6); color:#1F2937; border-radius:999px; padding:9px 14px; font-size:0.86rem; font-weight:600; cursor:pointer; transition:all .18s ease; box-shadow:0 1px 4px rgba(0,0,0,.06); }
-  .metric-btn:hover { transform: translateY(-1px); border-color:#93C5FD; box-shadow:0 4px 10px rgba(59,130,246,.14); }
-  .metric-btn.active { background: linear-gradient(135deg, #1B2A4A, #2563EB); color:#fff; border-color:#1D4ED8; box-shadow:0 6px 14px rgba(37,99,235,.22); }
+  .metric-row { margin-top: 18px; }
+  .metric-row:first-of-type { margin-top: 8px; }
+  .metric-header h3 { margin: 0 0 4px; color: #17324F; font-size: 1rem; }
+  .metric-header p { margin: 0 0 10px; color: #6B7280; font-size: 0.84rem; }
+  .dual-map-grid { display:grid; grid-template-columns: 1fr 1fr; gap:16px; }
+  .map-card { background:#FBFDFF; border:1px solid #E5E7EB; border-radius:12px; padding:12px; box-shadow: inset 0 1px 0 rgba(255,255,255,.8); }
+  .map-card-title { color:#1B2A4A; font-size:0.95rem; font-weight:700; margin-bottom:6px; }
+  .mini-map { height:420px; }
   .metric-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; margin-top: 8px; }
   .metric-table th { background: #1B2A4A; color: #F5A623; padding: 10px; text-align: left; }
   .metric-table td { border: 1px solid #E5E7EB; padding: 9px 10px; }
   .metric-table tr:nth-child(even) { background: #F9FAFB; }
   .note { font-size: 0.82rem; color: #6B7280; margin-top: 10px; }
-  @media (max-width: 900px) { .grid { grid-template-columns: 1fr 1fr; } }
-  @media (max-width: 640px) { .grid { grid-template-columns: 1fr; } .wrap { padding: 14px; } }
+  @media (max-width: 1000px) { .dual-map-grid, .grid { grid-template-columns: 1fr; } }
+  @media (max-width: 640px) { .wrap { padding: 14px; } }
 </style>
 </head>
 <body>
   <div class="wrap">
     <div class="hero">
       <h1>India heat map for State Public Universities</h1>
-      <p>This view aggregates NIRF state public university outcome data by state and union territory.</p>
-      <p><strong>Method used:</strong> latest reported UG 3-year and UG 4-year outcome cycle per university, combined with graduate-count weighting.</p>
+      <p>This page compares <strong>UG 3-Year</strong> and <strong>UG 4-Year</strong> state outcomes side by side for placement, non-graduation, and higher education.</p>
+      <p><strong>Method used:</strong> latest reported cycle per university, aggregated state-wise using graduate-count weighting.</p>
       <p><strong>State mapping research basis:</strong> matched from official university names, city identifiers in the NIRF list, and public institutional references.</p>
     </div>
 
     <div class="grid">
-      <div class="card"><div class="k">States / UTs with data</div><div class="v">17</div></div>
-      <div class="card"><div class="k">States / UTs without data</div><div class="v">19</div></div>
-      <div class="card"><div class="k">Institutions mapped</div><div class="v">43</div></div>
-      <div class="card"><div class="k">Avg placement %</div><div class="v">56.3</div></div>
+      <div class="card"><div class="k">States / UTs with UG3 data</div><div class="v">13</div></div>
+      <div class="card"><div class="k">States / UTs with UG4 data</div><div class="v">17</div></div>
+      <div class="card"><div class="k">Institutions mapped</div><div class="v">50</div></div>
+      <div class="card"><div class="k">States / UTs without usable data</div><div class="v">19</div></div>
     </div>
 
     <div class="section">
-      <h2>Interactive heat map</h2>
-      <p>Use the buttons above the map to switch between non-graduation, placement, and higher education outcomes.</p>
+      <h2>Side-by-side UG 3 and UG 4 maps</h2>
+      <p>Each row compares the same metric across UG 3-Year and UG 4-Year programmes for the full India map.</p>
       
     <script src="https://cdn.plot.ly/plotly-2.32.0.min.js"></script>
-    <div class="map-toolbar">
-      <div class="map-control-label">Select metric</div>
-      <div class="map-controls">
-        <button type="button" class="metric-btn active" data-metric-index="0">Non-graduation %</button>
-        <button type="button" class="metric-btn" data-metric-index="1">Placement %</button>
-        <button type="button" class="metric-btn" data-metric-index="2">Higher education %</button>
+
+    <div class="metric-row">
+      <div class="metric-header">
+        <h3>Placement percentage</h3>
+        <p>Darker blue indicates better placement outcomes. Gray states and UTs indicate no available data.</p>
+      </div>
+      <div class="dual-map-grid">
+        <div class="map-card"><div class="map-card-title">UG 3-Year</div><div id="map-placement-ug3" class="mini-map"></div></div>
+        <div class="map-card"><div class="map-card-title">UG 4-Year</div><div id="map-placement-ug4" class="mini-map"></div></div>
       </div>
     </div>
-    <div id="india-heatmap" style="height:760px;"></div>
+
+    <div class="metric-row">
+      <div class="metric-header">
+        <h3>Non-graduation percentage</h3>
+        <p>This is the risk view. Gray states and UTs indicate no available data.</p>
+      </div>
+      <div class="dual-map-grid">
+        <div class="map-card"><div class="map-card-title">UG 3-Year</div><div id="map-nongrad-ug3" class="mini-map"></div></div>
+        <div class="map-card"><div class="map-card-title">UG 4-Year</div><div id="map-nongrad-ug4" class="mini-map"></div></div>
+      </div>
+    </div>
+
+    <div class="metric-row">
+      <div class="metric-header">
+        <h3>Higher education percentage</h3>
+        <p>This shows the share of graduates moving into further studies. Gray states and UTs indicate no available data.</p>
+      </div>
+      <div class="dual-map-grid">
+        <div class="map-card"><div class="map-card-title">UG 3-Year</div><div id="map-he-ug3" class="mini-map"></div></div>
+        <div class="map-card"><div class="map-card-title">UG 4-Year</div><div id="map-he-ug4" class="mini-map"></div></div>
+      </div>
+    </div>
+
     <script>
       const GEOJSON_URL = "https://raw.githubusercontent.com/geohacker/india/master/state/india_state.geojson";
       const ALL_MAP_STATES = ["Andaman and Nicobar", "Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar", "Chandigarh", "Chhattisgarh", "Dadra and Nagar Haveli", "Daman and Diu", "Delhi", "Goa", "Gujarat", "Haryana", "Himachal Pradesh", "Jammu and Kashmir", "Jharkhand", "Karnataka", "Kerala", "Lakshadweep", "Madhya Pradesh", "Maharashtra", "Manipur", "Meghalaya", "Mizoram", "Nagaland", "Orissa", "Puducherry", "Punjab", "Rajasthan", "Sikkim", "Tamil Nadu", "Tripura", "Uttar Pradesh", "Uttaranchal", "West Bengal"];
-      const METRICS = [{"state": "Andhra Pradesh", "map_state": "Andhra Pradesh", "institution_count": 3, "program_rows_used": 4, "graduates_represented": 1807, "non_graduation_pct": 4.15, "placement_pct": 77.65, "higher_education_pct": 17.45, "universities": "Acharya Nagarjuna University; Andhra University, Visakhapatnam; Sri Venkateswara University"}, {"state": "Assam", "map_state": "Assam", "institution_count": 2, "program_rows_used": 4, "graduates_represented": 493, "non_graduation_pct": 20.63, "placement_pct": 39.55, "higher_education_pct": 47.67, "universities": "Dibrugarh University; Gauhati University"}, {"state": "Chandigarh", "map_state": "Chandigarh", "institution_count": 1, "program_rows_used": 2, "graduates_represented": 1353, "non_graduation_pct": 26.59, "placement_pct": 53.75, "higher_education_pct": 33.56, "universities": "Panjab University"}, {"state": "Delhi", "map_state": "Delhi", "institution_count": 4, "program_rows_used": 6, "graduates_represented": 5335, "non_graduation_pct": 4.75, "placement_pct": 74.39, "higher_education_pct": 19.38, "universities": "Delhi Technological University; Guru Gobind Singh Indraprastha University; IIIT-Delhi (Indraprastha Institute of Information Technology Delhi); Netaji Subhas University of Technology (NSUT)"}, {"state": "Haryana", "map_state": "Haryana", "institution_count": 3, "program_rows_used": 6, "graduates_represented": 2996, "non_graduation_pct": 11.6, "placement_pct": 44.65, "higher_education_pct": 49.39, "universities": "Guru Jambheshwar University of Science and Technology, Hissar; Kurukshetra University; Maharshi Dayanand University"}, {"state": "Jammu and Kashmir", "map_state": "Jammu and Kashmir", "institution_count": 3, "program_rows_used": 4, "graduates_represented": 1065, "non_graduation_pct": 4.46, "placement_pct": 29.33, "higher_education_pct": 46.51, "universities": "Sher-e-Kashmir University of Agricultural Science & Technology of Kashmir, Srinagar; University of Jammu; University of Kashmir"}, {"state": "Karnataka", "map_state": "Karnataka", "institution_count": 3, "program_rows_used": 3, "graduates_represented": 932, "non_graduation_pct": 4.92, "placement_pct": 19.56, "higher_education_pct": 70.05, "universities": "Mysore University; University of Agricultural Sciences, Bangalore; Visvesvaraya Technological University"}, {"state": "Kerala", "map_state": "Kerala", "institution_count": 2, "program_rows_used": 3, "graduates_represented": 229, "non_graduation_pct": 13.35, "placement_pct": 72.92, "higher_education_pct": 17.47, "universities": "Calicut University, Thenhipalem, Malapuram; Cochin University of Science and Technology"}, {"state": "Madhya Pradesh", "map_state": "Madhya Pradesh", "institution_count": 1, "program_rows_used": 2, "graduates_represented": 1144, "non_graduation_pct": 3.92, "placement_pct": 79.54, "higher_education_pct": 20.28, "universities": "Devi Ahilya Vishwavidyalaya"}, {"state": "Maharashtra", "map_state": "Maharashtra", "institution_count": 4, "program_rows_used": 4, "graduates_represented": 1549, "non_graduation_pct": 12.18, "placement_pct": 71.37, "higher_education_pct": 19.57, "universities": "COEP Technological University; Mumbai University; Savitribai Phule Pune University; Shivaji University"}, {"state": "Odisha", "map_state": "Orissa", "institution_count": 1, "program_rows_used": 1, "graduates_represented": 60, "non_graduation_pct": 0.0, "placement_pct": 58.3, "higher_education_pct": 38.3, "universities": "Utkal University"}, {"state": "Punjab", "map_state": "Punjab", "institution_count": 1, "program_rows_used": 1, "graduates_represented": 290, "non_graduation_pct": 34.5, "placement_pct": 27.9, "higher_education_pct": 68.3, "universities": "Punjab Agricultural University, Ludhiana"}, {"state": "Tamil Nadu", "map_state": "Tamil Nadu", "institution_count": 7, "program_rows_used": 9, "graduates_represented": 5292, "non_graduation_pct": 10.3, "placement_pct": 54.64, "higher_education_pct": 26.86, "universities": "Alagappa University; Anna University; Annamalai University; Bharathiar University; Bharathidasan University; Periyar University; Tamil Nadu Agricultural University"}, {"state": "Telangana", "map_state": "Telangana", "institution_count": 1, "program_rows_used": 2, "graduates_represented": 457, "non_graduation_pct": 4.78, "placement_pct": 63.69, "higher_education_pct": 22.5, "universities": "Osmania University"}, {"state": "Uttar Pradesh", "map_state": "Uttar Pradesh", "institution_count": 4, "program_rows_used": 7, "graduates_represented": 2248, "non_graduation_pct": 3.67, "placement_pct": 64.14, "higher_education_pct": 33.36, "universities": "CHAUDHARY CHARAN SINGH UNIVERSITY MEERUT; King George`s Medical University; Madan Mohan Malaviya University of Technology; University of Lucknow"}, {"state": "Uttarakhand", "map_state": "Uttaranchal", "institution_count": 1, "program_rows_used": 1, "graduates_represented": 715, "non_graduation_pct": 12.3, "placement_pct": 64.1, "higher_education_pct": 29.5, "universities": "G.B. Pant Universtiy of Agriculture and Technology, Pantnagar"}, {"state": "West Bengal", "map_state": "West Bengal", "institution_count": 2, "program_rows_used": 4, "graduates_represented": 1653, "non_graduation_pct": 24.25, "placement_pct": 61.8, "higher_education_pct": 35.96, "universities": "Calcutta University; Jadavpur University"}];
+      const PROGRAMS = {
+        ug3: { label: 'UG 3-Year', rows: [{"state": "Andhra Pradesh", "map_state": "Andhra Pradesh", "ug3_institution_count": 1, "ug3_program_rows_used": 1, "ug3_graduates_represented": 40, "ug3_non_graduation_pct": 0.0, "ug3_placement_pct": 60.0, "ug3_higher_education_pct": 27.5, "ug3_universities": "Andhra University, Visakhapatnam"}, {"state": "Assam", "map_state": "Assam", "ug3_institution_count": 2, "ug3_program_rows_used": 2, "ug3_graduates_represented": 215, "ug3_non_graduation_pct": 15.82, "ug3_placement_pct": 24.67, "ug3_higher_education_pct": 69.32, "ug3_universities": "Dibrugarh University; Gauhati University"}, {"state": "Chandigarh", "map_state": "Chandigarh", "ug3_institution_count": 1, "ug3_program_rows_used": 1, "ug3_graduates_represented": 645, "ug3_non_graduation_pct": 32.5, "ug3_placement_pct": 43.7, "ug3_higher_education_pct": 42.3, "ug3_universities": "Panjab University"}, {"state": "Delhi", "map_state": "Delhi", "ug3_institution_count": 2, "ug3_program_rows_used": 2, "ug3_graduates_represented": 415, "ug3_non_graduation_pct": 6.76, "ug3_placement_pct": 28.18, "ug3_higher_education_pct": 65.3, "ug3_universities": "Delhi Technological University; Netaji Subhas University of Technology (NSUT)"}, {"state": "Haryana", "map_state": "Haryana", "ug3_institution_count": 3, "ug3_program_rows_used": 3, "ug3_graduates_represented": 1759, "ug3_non_graduation_pct": 7.85, "ug3_placement_pct": 26.18, "ug3_higher_education_pct": 71.55, "ug3_universities": "Guru Jambheshwar University of Science and Technology, Hissar; Kurukshetra University; Maharshi Dayanand University"}, {"state": "Jammu and Kashmir", "map_state": "Jammu and Kashmir", "ug3_institution_count": 2, "ug3_program_rows_used": 2, "ug3_graduates_represented": 114, "ug3_non_graduation_pct": 5.63, "ug3_placement_pct": 52.64, "ug3_higher_education_pct": 42.1, "ug3_universities": "University of Jammu; University of Kashmir"}, {"state": "Kerala", "map_state": "Kerala", "ug3_institution_count": 2, "ug3_program_rows_used": 2, "ug3_graduates_represented": 74, "ug3_non_graduation_pct": 17.43, "ug3_placement_pct": 21.64, "ug3_higher_education_pct": 48.62, "ug3_universities": "Calicut University, Thenhipalem, Malapuram; Cochin University of Science and Technology"}, {"state": "Madhya Pradesh", "map_state": "Madhya Pradesh", "ug3_institution_count": 1, "ug3_program_rows_used": 1, "ug3_graduates_represented": 483, "ug3_non_graduation_pct": 7.1, "ug3_placement_pct": 77.0, "ug3_higher_education_pct": 23.0, "ug3_universities": "Devi Ahilya Vishwavidyalaya"}, {"state": "Maharashtra", "map_state": "Maharashtra", "ug3_institution_count": 2, "ug3_program_rows_used": 2, "ug3_graduates_represented": 532, "ug3_non_graduation_pct": 6.22, "ug3_placement_pct": 60.52, "ug3_higher_education_pct": 25.78, "ug3_universities": "Mumbai University; Savitribai Phule Pune University"}, {"state": "Tamil Nadu", "map_state": "Tamil Nadu", "ug3_institution_count": 5, "ug3_program_rows_used": 5, "ug3_graduates_represented": 777, "ug3_non_graduation_pct": 12.78, "ug3_placement_pct": 37.33, "ug3_higher_education_pct": 31.66, "ug3_universities": "Alagappa University; Annamalai University; Bharathiar University; Bharathidasan University; Periyar University"}, {"state": "Telangana", "map_state": "Telangana", "ug3_institution_count": 1, "ug3_program_rows_used": 1, "ug3_graduates_represented": 55, "ug3_non_graduation_pct": 8.3, "ug3_placement_pct": 63.6, "ug3_higher_education_pct": 36.4, "ug3_universities": "Osmania University"}, {"state": "Uttar Pradesh", "map_state": "Uttar Pradesh", "ug3_institution_count": 3, "ug3_program_rows_used": 3, "ug3_graduates_represented": 745, "ug3_non_graduation_pct": 3.86, "ug3_placement_pct": 40.3, "ug3_higher_education_pct": 56.1, "ug3_universities": "CHAUDHARY CHARAN SINGH UNIVERSITY MEERUT; Madan Mohan Malaviya University of Technology; University of Lucknow"}, {"state": "West Bengal", "map_state": "West Bengal", "ug3_institution_count": 2, "ug3_program_rows_used": 2, "ug3_graduates_represented": 501, "ug3_non_graduation_pct": 19.95, "ug3_placement_pct": 13.4, "ug3_higher_education_pct": 86.6, "ug3_universities": "Calcutta University; Jadavpur University"}] },
+        ug4: { label: 'UG 4-Year', rows: [{"state": "Andhra Pradesh", "map_state": "Andhra Pradesh", "ug4_institution_count": 3, "ug4_program_rows_used": 3, "ug4_graduates_represented": 1767, "ug4_non_graduation_pct": 4.25, "ug4_placement_pct": 78.05, "ug4_higher_education_pct": 17.22, "ug4_universities": "Acharya Nagarjuna University; Andhra University, Visakhapatnam; Sri Venkateswara University"}, {"state": "Assam", "map_state": "Assam", "ug4_institution_count": 2, "ug4_program_rows_used": 2, "ug4_graduates_represented": 278, "ug4_non_graduation_pct": 24.35, "ug4_placement_pct": 51.05, "ug4_higher_education_pct": 30.93, "ug4_universities": "Dibrugarh University; Gauhati University"}, {"state": "Chandigarh", "map_state": "Chandigarh", "ug4_institution_count": 1, "ug4_program_rows_used": 1, "ug4_graduates_represented": 708, "ug4_non_graduation_pct": 21.2, "ug4_placement_pct": 62.9, "ug4_higher_education_pct": 25.6, "ug4_universities": "Panjab University"}, {"state": "Delhi", "map_state": "Delhi", "ug4_institution_count": 4, "ug4_program_rows_used": 4, "ug4_graduates_represented": 4920, "ug4_non_graduation_pct": 4.58, "ug4_placement_pct": 78.29, "ug4_higher_education_pct": 15.5, "ug4_universities": "Delhi Technological University; Guru Gobind Singh Indraprastha University; IIIT-Delhi (Indraprastha Institute of Information Technology Delhi); Netaji Subhas University of Technology (NSUT)"}, {"state": "Haryana", "map_state": "Haryana", "ug4_institution_count": 3, "ug4_program_rows_used": 3, "ug4_graduates_represented": 1237, "ug4_non_graduation_pct": 16.93, "ug4_placement_pct": 70.92, "ug4_higher_education_pct": 17.89, "ug4_universities": "Guru Jambheshwar University of Science and Technology, Hissar; Kurukshetra University; Maharshi Dayanand University"}, {"state": "Jammu and Kashmir", "map_state": "Jammu and Kashmir", "ug4_institution_count": 2, "ug4_program_rows_used": 2, "ug4_graduates_represented": 951, "ug4_non_graduation_pct": 4.32, "ug4_placement_pct": 26.53, "ug4_higher_education_pct": 47.03, "ug4_universities": "Sher-e-Kashmir University of Agricultural Science & Technology of Kashmir, Srinagar; University of Kashmir"}, {"state": "Karnataka", "map_state": "Karnataka", "ug4_institution_count": 3, "ug4_program_rows_used": 3, "ug4_graduates_represented": 932, "ug4_non_graduation_pct": 4.92, "ug4_placement_pct": 19.56, "ug4_higher_education_pct": 70.05, "ug4_universities": "Mysore University; University of Agricultural Sciences, Bangalore; Visvesvaraya Technological University"}, {"state": "Kerala", "map_state": "Kerala", "ug4_institution_count": 1, "ug4_program_rows_used": 1, "ug4_graduates_represented": 155, "ug4_non_graduation_pct": 11.4, "ug4_placement_pct": 97.4, "ug4_higher_education_pct": 2.6, "ug4_universities": "Cochin University of Science and Technology"}, {"state": "Madhya Pradesh", "map_state": "Madhya Pradesh", "ug4_institution_count": 1, "ug4_program_rows_used": 1, "ug4_graduates_represented": 661, "ug4_non_graduation_pct": 1.6, "ug4_placement_pct": 81.4, "ug4_higher_education_pct": 18.3, "ug4_universities": "Devi Ahilya Vishwavidyalaya"}, {"state": "Maharashtra", "map_state": "Maharashtra", "ug4_institution_count": 2, "ug4_program_rows_used": 2, "ug4_graduates_represented": 1017, "ug4_non_graduation_pct": 15.3, "ug4_placement_pct": 77.05, "ug4_higher_education_pct": 16.32, "ug4_universities": "COEP Technological University; Shivaji University"}, {"state": "Odisha", "map_state": "Orissa", "ug4_institution_count": 1, "ug4_program_rows_used": 1, "ug4_graduates_represented": 60, "ug4_non_graduation_pct": 0.0, "ug4_placement_pct": 58.3, "ug4_higher_education_pct": 38.3, "ug4_universities": "Utkal University"}, {"state": "Punjab", "map_state": "Punjab", "ug4_institution_count": 1, "ug4_program_rows_used": 1, "ug4_graduates_represented": 290, "ug4_non_graduation_pct": 34.5, "ug4_placement_pct": 27.9, "ug4_higher_education_pct": 68.3, "ug4_universities": "Punjab Agricultural University, Ludhiana"}, {"state": "Tamil Nadu", "map_state": "Tamil Nadu", "ug4_institution_count": 4, "ug4_program_rows_used": 4, "ug4_graduates_represented": 4515, "ug4_non_graduation_pct": 9.88, "ug4_placement_pct": 57.62, "ug4_higher_education_pct": 26.03, "ug4_universities": "Alagappa University; Anna University; Annamalai University; Tamil Nadu Agricultural University"}, {"state": "Telangana", "map_state": "Telangana", "ug4_institution_count": 1, "ug4_program_rows_used": 1, "ug4_graduates_represented": 402, "ug4_non_graduation_pct": 4.3, "ug4_placement_pct": 63.7, "ug4_higher_education_pct": 20.6, "ug4_universities": "Osmania University"}, {"state": "Uttar Pradesh", "map_state": "Uttar Pradesh", "ug4_institution_count": 4, "ug4_program_rows_used": 4, "ug4_graduates_represented": 1503, "ug4_non_graduation_pct": 3.58, "ug4_placement_pct": 75.96, "ug4_higher_education_pct": 22.08, "ug4_universities": "CHAUDHARY CHARAN SINGH UNIVERSITY MEERUT; King George`s Medical University; Madan Mohan Malaviya University of Technology; University of Lucknow"}, {"state": "Uttarakhand", "map_state": "Uttaranchal", "ug4_institution_count": 1, "ug4_program_rows_used": 1, "ug4_graduates_represented": 715, "ug4_non_graduation_pct": 12.3, "ug4_placement_pct": 64.1, "ug4_higher_education_pct": 29.5, "ug4_universities": "G.B. Pant Universtiy of Agriculture and Technology, Pantnagar"}, {"state": "West Bengal", "map_state": "West Bengal", "ug4_institution_count": 2, "ug4_program_rows_used": 2, "ug4_graduates_represented": 1152, "ug4_non_graduation_pct": 26.12, "ug4_placement_pct": 82.85, "ug4_higher_education_pct": 13.93, "ug4_universities": "Calcutta University; Jadavpur University"}] }
+      };
+
       const METRIC_SPECS = [
-        { key: 'non_graduation_pct', label: 'Non-graduation %', colorscale: 'YlOrRd', reversescale: true },
-        { key: 'placement_pct', label: 'Placement %', colorscale: 'Blues', reversescale: false },
-        { key: 'higher_education_pct', label: 'Higher education %', colorscale: 'Purples', reversescale: false }
+        { key: 'placement_pct', label: 'Placement %', colorscale: 'Blues', reversescale: false, ids: { ug3: 'map-placement-ug3', ug4: 'map-placement-ug4' } },
+        { key: 'non_graduation_pct', label: 'Non-graduation %', colorscale: 'YlOrRd', reversescale: true, ids: { ug3: 'map-nongrad-ug3', ug4: 'map-nongrad-ug4' } },
+        { key: 'higher_education_pct', label: 'Higher education %', colorscale: 'Purples', reversescale: false, ids: { ug3: 'map-he-ug3', ug4: 'map-he-ug4' } }
       ];
 
-      function buildTraces(geojson) {
+      function baseLayout(titleText) {
+        return {
+          paper_bgcolor: '#ffffff',
+          plot_bgcolor: '#ffffff',
+          margin: { l: 8, r: 8, t: 8, b: 8 },
+          height: 420,
+          geo: {
+            visible: false,
+            bgcolor: 'rgba(0,0,0,0)',
+            projection: { type: 'mercator' },
+            center: { lat: 22.8, lon: 79.0 },
+            lataxis: { range: [5, 38.5] },
+            lonaxis: { range: [67, 98] }
+          },
+          annotations: [{
+            text: titleText,
+            x: 0.02,
+            y: 1.04,
+            xref: 'paper',
+            yref: 'paper',
+            showarrow: false,
+            font: { size: 14, color: '#1B2A4A' }
+          }]
+        };
+      }
+
+      function buildMapTraces(rows, spec, zmin, zmax, geojson) {
         const noDataTrace = {
           type: 'choropleth',
           geojson,
@@ -84,244 +141,237 @@
           colorscale: [[0, '#E5E7EB'], [1, '#E5E7EB']],
           showscale: false,
           marker: { line: { color: '#FFFFFF', width: 0.8 } },
-          hovertemplate: '<b>%{location}</b><br>No mapped state public university outcome data available<extra></extra>',
-          visible: true
+          hovertemplate: '<b>%{location}</b><br>No mapped data available<extra></extra>'
         };
 
-        const metricTraces = METRIC_SPECS.map((spec, i) => {
-          const locations = METRICS.map(row => row.map_state);
-          const z = METRICS.map(row => row[spec.key]);
-          const customdata = METRICS.map(row => [row.state, row.institution_count, row.graduates_represented, row.universities]);
-          return {
-            type: 'choropleth',
-            geojson,
-            featureidkey: 'properties.NAME_1',
-            locations,
-            z,
-            locationmode: 'geojson-id',
-            colorscale: spec.colorscale,
-            reversescale: spec.reversescale,
-            marker: { line: { color: '#FFFFFF', width: 0.8 } },
-            colorbar: { title: spec.label },
-            customdata,
-            hovertemplate: '<b>%{customdata[0]}</b><br>' + spec.label + ': <b>%{z:.1f}%</b><br>Institutions covered: %{customdata[1]}<br>Graduates represented: %{customdata[2]:,}<extra></extra>',
-            visible: i === 0
-          };
-        });
+        const metricRows = rows.filter(row => row[spec.key] !== null && row[spec.key] !== undefined);
+        const metricTrace = {
+          type: 'choropleth',
+          geojson,
+          featureidkey: 'properties.NAME_1',
+          locations: metricRows.map(row => row.map_state),
+          z: metricRows.map(row => row[spec.key]),
+          locationmode: 'geojson-id',
+          colorscale: spec.colorscale,
+          reversescale: spec.reversescale,
+          zmin,
+          zmax,
+          marker: { line: { color: '#FFFFFF', width: 0.8 } },
+          colorbar: { title: spec.label, thickness: 10, len: 0.65 },
+          customdata: metricRows.map(row => [row.state, row.institution_count || row.ug3_institution_count || row.ug4_institution_count, row.graduates_represented || row.ug3_graduates_represented || row.ug4_graduates_represented]),
+          hovertemplate: '<b>%{customdata[0]}</b><br>' + spec.label + ': <b>%{z:.1f}%</b><br>Institutions covered: %{customdata[1]}<br>Graduates represented: %{customdata[2]:,}<extra></extra>'
+        };
 
-        return [noDataTrace, ...metricTraces];
+        return [noDataTrace, metricTrace];
       }
 
-      const visibilityMaps = METRIC_SPECS.map((_, i) => {
-        const visible = [true, false, false, false];
-        visible[i + 1] = true;
-        return visible;
-      });
+      function renderAllMaps(geojson) {
+        METRIC_SPECS.forEach(spec => {
+          const values = [];
+          Object.values(PROGRAMS).forEach(program => {
+            program.rows.forEach(row => {
+              if (row[spec.key] !== null && row[spec.key] !== undefined) values.push(row[spec.key]);
+            });
+          });
+          const zmin = values.length ? Math.min(...values) : 0;
+          const zmax = values.length ? Math.max(...values) : 100;
 
-      function setActiveMetric(idx) {
-        Plotly.restyle('india-heatmap', 'visible', visibilityMaps[idx]);
-        document.querySelectorAll('.metric-btn').forEach((btn, i) => {
-          btn.classList.toggle('active', i === idx);
+          Object.entries(PROGRAMS).forEach(([programKey, program]) => {
+            Plotly.newPlot(
+              spec.ids[programKey],
+              buildMapTraces(program.rows, spec, zmin, zmax, geojson),
+              baseLayout(program.label),
+              { responsive: true, displayModeBar: false }
+            );
+          });
         });
       }
-
-      const layout = {
-        paper_bgcolor: '#ffffff',
-        plot_bgcolor: '#ffffff',
-        margin: { l: 10, r: 10, t: 70, b: 10 },
-        height: 760,
-        title: {
-          text: 'India heat map — state public university outcomes',
-          x: 0.02,
-          font: { size: 22, color: '#1B2A4A' }
-        },
-        annotations: [{
-          text: 'Gray states/UTs = no available mapped university outcome data',
-          x: 0.02, y: 1.05, xref: 'paper', yref: 'paper', showarrow: false,
-          font: { size: 12, color: '#6B7280' }
-        }],
-        geo: {
-          visible: false,
-          bgcolor: 'rgba(0,0,0,0)',
-          projection: { type: 'mercator' },
-          center: { lat: 22.8, lon: 79.0 },
-          lataxis: { range: [5, 38.5] },
-          lonaxis: { range: [67, 98] }
-        }
-      };
 
       fetch(GEOJSON_URL)
         .then(resp => resp.json())
-        .then(geojson => Plotly.newPlot('india-heatmap', buildTraces(geojson), layout, { responsive: true, displayModeBar: true }))
-        .then(() => {
-          document.querySelectorAll('.metric-btn').forEach((btn) => {
-            btn.addEventListener('click', () => setActiveMetric(Number(btn.dataset.metricIndex)));
-          });
-          setActiveMetric(0);
-        })
+        .then(geojson => renderAllMaps(geojson))
         .catch(err => {
-          document.getElementById('india-heatmap').innerHTML = '<div style="padding:24px;color:#B91C1C">Map failed to load. Please refresh the page.</div>';
+          document.querySelectorAll('.mini-map').forEach(el => {
+            el.innerHTML = '<div style="padding:24px;color:#B91C1C">Map failed to load. Please refresh the page.</div>';
+          });
           console.error(err);
         });
     </script>
     
-      <div class="note">Non-graduation is a risk indicator, while placement and higher education show positive transitions after graduation.</div>
+      <div class="note">Gray states and UTs indicate no available mapped university outcome data for that programme.</div>
     </div>
 
     <div class="section">
       <h2>State-wise summary table</h2>
-      <p>The table below shows the weighted averages used in the map.</p>
+      <p>The table below shows the state-level percentages used in the side-by-side maps.</p>
       <table class="dataframe metric-table">
   <thead>
     <tr style="text-align: right;">
       <th>State / UT</th>
-      <th>Institutions</th>
-      <th>Graduates represented</th>
-      <th>Non-graduation %</th>
-      <th>Placement %</th>
-      <th>Higher education %</th>
+      <th>UG3 Non-grad %</th>
+      <th>UG4 Non-grad %</th>
+      <th>UG3 Placement %</th>
+      <th>UG4 Placement %</th>
+      <th>UG3 Higher Ed %</th>
+      <th>UG4 Higher Ed %</th>
     </tr>
   </thead>
   <tbody>
     <tr>
       <td>Andhra Pradesh</td>
-      <td>3</td>
-      <td>1807</td>
+      <td>0.0</td>
       <td>4.2</td>
-      <td>77.7</td>
-      <td>17.4</td>
+      <td>60.0</td>
+      <td>78.0</td>
+      <td>27.5</td>
+      <td>17.2</td>
     </tr>
     <tr>
       <td>Assam</td>
-      <td>2</td>
-      <td>493</td>
-      <td>20.6</td>
-      <td>39.5</td>
-      <td>47.7</td>
+      <td>15.8</td>
+      <td>24.4</td>
+      <td>24.7</td>
+      <td>51.0</td>
+      <td>69.3</td>
+      <td>30.9</td>
     </tr>
     <tr>
       <td>Chandigarh</td>
-      <td>1</td>
-      <td>1353</td>
-      <td>26.6</td>
-      <td>53.8</td>
-      <td>33.6</td>
+      <td>32.5</td>
+      <td>21.2</td>
+      <td>43.7</td>
+      <td>62.9</td>
+      <td>42.3</td>
+      <td>25.6</td>
     </tr>
     <tr>
       <td>Delhi</td>
-      <td>4</td>
-      <td>5335</td>
-      <td>4.8</td>
-      <td>74.4</td>
-      <td>19.4</td>
+      <td>6.8</td>
+      <td>4.6</td>
+      <td>28.2</td>
+      <td>78.3</td>
+      <td>65.3</td>
+      <td>15.5</td>
     </tr>
     <tr>
       <td>Haryana</td>
-      <td>3</td>
-      <td>2996</td>
-      <td>11.6</td>
-      <td>44.6</td>
-      <td>49.4</td>
+      <td>7.8</td>
+      <td>16.9</td>
+      <td>26.2</td>
+      <td>70.9</td>
+      <td>71.5</td>
+      <td>17.9</td>
     </tr>
     <tr>
       <td>Jammu and Kashmir</td>
-      <td>3</td>
-      <td>1065</td>
-      <td>4.5</td>
-      <td>29.3</td>
-      <td>46.5</td>
+      <td>5.6</td>
+      <td>4.3</td>
+      <td>52.6</td>
+      <td>26.5</td>
+      <td>42.1</td>
+      <td>47.0</td>
     </tr>
     <tr>
       <td>Karnataka</td>
-      <td>3</td>
-      <td>932</td>
+      <td>—</td>
       <td>4.9</td>
+      <td>—</td>
       <td>19.6</td>
+      <td>—</td>
       <td>70.0</td>
     </tr>
     <tr>
       <td>Kerala</td>
-      <td>2</td>
-      <td>229</td>
-      <td>13.3</td>
-      <td>72.9</td>
-      <td>17.5</td>
+      <td>17.4</td>
+      <td>11.4</td>
+      <td>21.6</td>
+      <td>97.4</td>
+      <td>48.6</td>
+      <td>2.6</td>
     </tr>
     <tr>
       <td>Madhya Pradesh</td>
-      <td>1</td>
-      <td>1144</td>
-      <td>3.9</td>
-      <td>79.5</td>
-      <td>20.3</td>
+      <td>7.1</td>
+      <td>1.6</td>
+      <td>77.0</td>
+      <td>81.4</td>
+      <td>23.0</td>
+      <td>18.3</td>
     </tr>
     <tr>
       <td>Maharashtra</td>
-      <td>4</td>
-      <td>1549</td>
-      <td>12.2</td>
-      <td>71.4</td>
-      <td>19.6</td>
+      <td>6.2</td>
+      <td>15.3</td>
+      <td>60.5</td>
+      <td>77.0</td>
+      <td>25.8</td>
+      <td>16.3</td>
     </tr>
     <tr>
       <td>Odisha</td>
-      <td>1</td>
-      <td>60</td>
+      <td>—</td>
       <td>0.0</td>
+      <td>—</td>
       <td>58.3</td>
+      <td>—</td>
       <td>38.3</td>
     </tr>
     <tr>
       <td>Punjab</td>
-      <td>1</td>
-      <td>290</td>
+      <td>—</td>
       <td>34.5</td>
+      <td>—</td>
       <td>27.9</td>
+      <td>—</td>
       <td>68.3</td>
     </tr>
     <tr>
       <td>Tamil Nadu</td>
-      <td>7</td>
-      <td>5292</td>
-      <td>10.3</td>
-      <td>54.6</td>
-      <td>26.9</td>
+      <td>12.8</td>
+      <td>9.9</td>
+      <td>37.3</td>
+      <td>57.6</td>
+      <td>31.7</td>
+      <td>26.0</td>
     </tr>
     <tr>
       <td>Telangana</td>
-      <td>1</td>
-      <td>457</td>
-      <td>4.8</td>
+      <td>8.3</td>
+      <td>4.3</td>
+      <td>63.6</td>
       <td>63.7</td>
-      <td>22.5</td>
+      <td>36.4</td>
+      <td>20.6</td>
     </tr>
     <tr>
       <td>Uttar Pradesh</td>
-      <td>4</td>
-      <td>2248</td>
-      <td>3.7</td>
-      <td>64.1</td>
-      <td>33.4</td>
+      <td>3.9</td>
+      <td>3.6</td>
+      <td>40.3</td>
+      <td>76.0</td>
+      <td>56.1</td>
+      <td>22.1</td>
     </tr>
     <tr>
       <td>Uttarakhand</td>
-      <td>1</td>
-      <td>715</td>
+      <td>—</td>
       <td>12.3</td>
+      <td>—</td>
       <td>64.1</td>
+      <td>—</td>
       <td>29.5</td>
     </tr>
     <tr>
       <td>West Bengal</td>
-      <td>2</td>
-      <td>1653</td>
-      <td>24.2</td>
-      <td>61.8</td>
-      <td>36.0</td>
+      <td>19.9</td>
+      <td>26.1</td>
+      <td>13.4</td>
+      <td>82.8</td>
+      <td>86.6</td>
+      <td>13.9</td>
     </tr>
   </tbody>
 </table>
-      <div class="note">Blank values mean the relevant outcome metric was not reported in the latest available cycle for that state’s institutions.</div>
     </div>
   </div>
 </body>

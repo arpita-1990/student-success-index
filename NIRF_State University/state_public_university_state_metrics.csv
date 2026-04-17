@@ -1,18 +1,18 @@
-state,map_state,institution_count,program_rows_used,graduates_represented,non_graduation_pct,placement_pct,higher_education_pct,universities
-Andhra Pradesh,Andhra Pradesh,3,4,1807,4.15,77.65,17.45,"Acharya Nagarjuna University; Andhra University, Visakhapatnam; Sri Venkateswara University"
-Assam,Assam,2,4,493,20.63,39.55,47.67,Dibrugarh University; Gauhati University
-Chandigarh,Chandigarh,1,2,1353,26.59,53.75,33.56,Panjab University
-Delhi,Delhi,4,6,5335,4.75,74.39,19.38,Delhi Technological University; Guru Gobind Singh Indraprastha University; IIIT-Delhi (Indraprastha Institute of Information Technology Delhi); Netaji Subhas University of Technology (NSUT)
-Haryana,Haryana,3,6,2996,11.6,44.65,49.39,"Guru Jambheshwar University of Science and Technology, Hissar; Kurukshetra University; Maharshi Dayanand University"
-Jammu and Kashmir,Jammu and Kashmir,3,4,1065,4.46,29.33,46.51,"Sher-e-Kashmir University of Agricultural Science & Technology of Kashmir, Srinagar; University of Jammu; University of Kashmir"
-Karnataka,Karnataka,3,3,932,4.92,19.56,70.05,"Mysore University; University of Agricultural Sciences, Bangalore; Visvesvaraya Technological University"
-Kerala,Kerala,2,3,229,13.35,72.92,17.47,"Calicut University, Thenhipalem, Malapuram; Cochin University of Science and Technology"
-Madhya Pradesh,Madhya Pradesh,1,2,1144,3.92,79.54,20.28,Devi Ahilya Vishwavidyalaya
-Maharashtra,Maharashtra,4,4,1549,12.18,71.37,19.57,COEP Technological University; Mumbai University; Savitribai Phule Pune University; Shivaji University
-Odisha,Orissa,1,1,60,0.0,58.3,38.3,Utkal University
-Punjab,Punjab,1,1,290,34.5,27.9,68.3,"Punjab Agricultural University, Ludhiana"
-Tamil Nadu,Tamil Nadu,7,9,5292,10.3,54.64,26.86,Alagappa University; Anna University; Annamalai University; Bharathiar University; Bharathidasan University; Periyar University; Tamil Nadu Agricultural University
-Telangana,Telangana,1,2,457,4.78,63.69,22.5,Osmania University
-Uttar Pradesh,Uttar Pradesh,4,7,2248,3.67,64.14,33.36,CHAUDHARY CHARAN SINGH UNIVERSITY MEERUT; King George`s Medical University; Madan Mohan Malaviya University of Technology; University of Lucknow
-Uttarakhand,Uttaranchal,1,1,715,12.3,64.1,29.5,"G.B. Pant Universtiy of Agriculture and Technology, Pantnagar"
-West Bengal,West Bengal,2,4,1653,24.25,61.8,35.96,Calcutta University; Jadavpur University
+state,map_state,ug3_institution_count,ug3_program_rows_used,ug3_graduates_represented,ug3_non_graduation_pct,ug3_placement_pct,ug3_higher_education_pct,ug3_universities,ug4_institution_count,ug4_program_rows_used,ug4_graduates_represented,ug4_non_graduation_pct,ug4_placement_pct,ug4_higher_education_pct,ug4_universities
+Andhra Pradesh,Andhra Pradesh,1.0,1.0,40.0,0.0,60.0,27.5,"Andhra University, Visakhapatnam",3,3,1767,4.25,78.05,17.22,"Acharya Nagarjuna University; Andhra University, Visakhapatnam; Sri Venkateswara University"
+Assam,Assam,2.0,2.0,215.0,15.82,24.67,69.32,Dibrugarh University; Gauhati University,2,2,278,24.35,51.05,30.93,Dibrugarh University; Gauhati University
+Chandigarh,Chandigarh,1.0,1.0,645.0,32.5,43.7,42.3,Panjab University,1,1,708,21.2,62.9,25.6,Panjab University
+Delhi,Delhi,2.0,2.0,415.0,6.76,28.18,65.3,Delhi Technological University; Netaji Subhas University of Technology (NSUT),4,4,4920,4.58,78.29,15.5,Delhi Technological University; Guru Gobind Singh Indraprastha University; IIIT-Delhi (Indraprastha Institute of Information Technology Delhi); Netaji Subhas University of Technology (NSUT)
+Haryana,Haryana,3.0,3.0,1759.0,7.85,26.18,71.55,"Guru Jambheshwar University of Science and Technology, Hissar; Kurukshetra University; Maharshi Dayanand University",3,3,1237,16.93,70.92,17.89,"Guru Jambheshwar University of Science and Technology, Hissar; Kurukshetra University; Maharshi Dayanand University"
+Jammu and Kashmir,Jammu and Kashmir,2.0,2.0,114.0,5.63,52.64,42.1,University of Jammu; University of Kashmir,2,2,951,4.32,26.53,47.03,"Sher-e-Kashmir University of Agricultural Science & Technology of Kashmir, Srinagar; University of Kashmir"
+Karnataka,Karnataka,,,,,,,,3,3,932,4.92,19.56,70.05,"Mysore University; University of Agricultural Sciences, Bangalore; Visvesvaraya Technological University"
+Kerala,Kerala,2.0,2.0,74.0,17.43,21.64,48.62,"Calicut University, Thenhipalem, Malapuram; Cochin University of Science and Technology",1,1,155,11.4,97.4,2.6,Cochin University of Science and Technology
+Madhya Pradesh,Madhya Pradesh,1.0,1.0,483.0,7.1,77.0,23.0,Devi Ahilya Vishwavidyalaya,1,1,661,1.6,81.4,18.3,Devi Ahilya Vishwavidyalaya
+Maharashtra,Maharashtra,2.0,2.0,532.0,6.22,60.52,25.78,Mumbai University; Savitribai Phule Pune University,2,2,1017,15.3,77.05,16.32,COEP Technological University; Shivaji University
+Odisha,Orissa,,,,,,,,1,1,60,0.0,58.3,38.3,Utkal University
+Punjab,Punjab,,,,,,,,1,1,290,34.5,27.9,68.3,"Punjab Agricultural University, Ludhiana"
+Tamil Nadu,Tamil Nadu,5.0,5.0,777.0,12.78,37.33,31.66,Alagappa University; Annamalai University; Bharathiar University; Bharathidasan University; Periyar University,4,4,4515,9.88,57.62,26.03,Alagappa University; Anna University; Annamalai University; Tamil Nadu Agricultural University
+Telangana,Telangana,1.0,1.0,55.0,8.3,63.6,36.4,Osmania University,1,1,402,4.3,63.7,20.6,Osmania University
+Uttar Pradesh,Uttar Pradesh,3.0,3.0,745.0,3.86,40.3,56.1,CHAUDHARY CHARAN SINGH UNIVERSITY MEERUT; Madan Mohan Malaviya University of Technology; University of Lucknow,4,4,1503,3.58,75.96,22.08,CHAUDHARY CHARAN SINGH UNIVERSITY MEERUT; King George`s Medical University; Madan Mohan Malaviya University of Technology; University of Lucknow
+Uttarakhand,Uttaranchal,,,,,,,,1,1,715,12.3,64.1,29.5,"G.B. Pant Universtiy of Agriculture and Technology, Pantnagar"
+West Bengal,West Bengal,2.0,2.0,501.0,19.95,13.4,86.6,Calcutta University; Jadavpur University,2,2,1152,26.12,82.85,13.93,Calcutta University; Jadavpur University

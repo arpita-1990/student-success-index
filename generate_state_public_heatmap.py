@@ -157,20 +157,20 @@ def weighted_average(group: pd.DataFrame, metric: str) -> float | None:
     return round((valid[metric] * valid["graduates"]).sum() / total_w, 2)
 
 
-def aggregate_state_metrics(records: pd.DataFrame) -> pd.DataFrame:
+def aggregate_state_metrics(records: pd.DataFrame, prefix: str = "") -> pd.DataFrame:
     out = []
     for state, grp in records.groupby("state", sort=True):
         out.append(
             {
                 "state": state,
                 "map_state": GEO_FIX.get(state, state),
-                "institution_count": int(grp["institution"].nunique()),
-                "program_rows_used": int(len(grp)),
-                "graduates_represented": int(grp["graduates"].sum()),
-                "non_graduation_pct": weighted_average(grp, "non_grad_pct"),
-                "placement_pct": weighted_average(grp, "placement_pct"),
-                "higher_education_pct": weighted_average(grp, "higher_ed_pct"),
-                "universities": "; ".join(sorted(grp["institution"].unique())),
+                f"{prefix}institution_count": int(grp["institution"].nunique()),
+                f"{prefix}program_rows_used": int(len(grp)),
+                f"{prefix}graduates_represented": int(grp["graduates"].sum()),
+                f"{prefix}non_graduation_pct": weighted_average(grp, "non_grad_pct"),
+                f"{prefix}placement_pct": weighted_average(grp, "placement_pct"),
+                f"{prefix}higher_education_pct": weighted_average(grp, "higher_ed_pct"),
+                f"{prefix}universities": "; ".join(sorted(grp["institution"].unique())),
             }
         )
     return pd.DataFrame(out).sort_values("state").reset_index(drop=True)
@@ -189,38 +189,93 @@ def lookup_table() -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
-def build_choropleth(metrics_df: pd.DataFrame) -> str:
+def build_choropleth(ug3_metrics_df: pd.DataFrame, ug4_metrics_df: pd.DataFrame) -> str:
     geojson = requests.get(GEOJSON_URL, headers={"User-Agent": "Mozilla/5.0"}, timeout=60).json()
     all_map_states = sorted(feature["properties"]["NAME_1"] for feature in geojson["features"])
 
-    metrics = metrics_df.where(pd.notna(metrics_df), None).to_dict(orient="records")
-    metrics_json = json.dumps(metrics)
+    ug3_rows = json.dumps(ug3_metrics_df.where(pd.notna(ug3_metrics_df), None).to_dict(orient="records"))
+    ug4_rows = json.dumps(ug4_metrics_df.where(pd.notna(ug4_metrics_df), None).to_dict(orient="records"))
     states_json = json.dumps(all_map_states)
     geojson_url_json = json.dumps(GEOJSON_URL)
 
-    return f"""
+    html = """
     <script src=\"https://cdn.plot.ly/plotly-2.32.0.min.js\"></script>
-    <div class=\"map-toolbar\">
-      <div class=\"map-control-label\">Select metric</div>
-      <div class=\"map-controls\">
-        <button type=\"button\" class=\"metric-btn active\" data-metric-index=\"0\">Non-graduation %</button>
-        <button type=\"button\" class=\"metric-btn\" data-metric-index=\"1\">Placement %</button>
-        <button type=\"button\" class=\"metric-btn\" data-metric-index=\"2\">Higher education %</button>
+
+    <div class=\"metric-row\">
+      <div class=\"metric-header\">
+        <h3>Placement percentage</h3>
+        <p>Darker blue indicates better placement outcomes. Gray states and UTs indicate no available data.</p>
+      </div>
+      <div class=\"dual-map-grid\">
+        <div class=\"map-card\"><div class=\"map-card-title\">UG 3-Year</div><div id=\"map-placement-ug3\" class=\"mini-map\"></div></div>
+        <div class=\"map-card\"><div class=\"map-card-title\">UG 4-Year</div><div id=\"map-placement-ug4\" class=\"mini-map\"></div></div>
       </div>
     </div>
-    <div id=\"india-heatmap\" style=\"height:760px;\"></div>
+
+    <div class=\"metric-row\">
+      <div class=\"metric-header\">
+        <h3>Non-graduation percentage</h3>
+        <p>This is the risk view. Gray states and UTs indicate no available data.</p>
+      </div>
+      <div class=\"dual-map-grid\">
+        <div class=\"map-card\"><div class=\"map-card-title\">UG 3-Year</div><div id=\"map-nongrad-ug3\" class=\"mini-map\"></div></div>
+        <div class=\"map-card\"><div class=\"map-card-title\">UG 4-Year</div><div id=\"map-nongrad-ug4\" class=\"mini-map\"></div></div>
+      </div>
+    </div>
+
+    <div class=\"metric-row\">
+      <div class=\"metric-header\">
+        <h3>Higher education percentage</h3>
+        <p>This shows the share of graduates moving into further studies. Gray states and UTs indicate no available data.</p>
+      </div>
+      <div class=\"dual-map-grid\">
+        <div class=\"map-card\"><div class=\"map-card-title\">UG 3-Year</div><div id=\"map-he-ug3\" class=\"mini-map\"></div></div>
+        <div class=\"map-card\"><div class=\"map-card-title\">UG 4-Year</div><div id=\"map-he-ug4\" class=\"mini-map\"></div></div>
+      </div>
+    </div>
+
     <script>
-      const GEOJSON_URL = {geojson_url_json};
-      const ALL_MAP_STATES = {states_json};
-      const METRICS = {metrics_json};
+      const GEOJSON_URL = __GEOJSON_URL__;
+      const ALL_MAP_STATES = __ALL_STATES__;
+      const PROGRAMS = {
+        ug3: { label: 'UG 3-Year', rows: __UG3_ROWS__ },
+        ug4: { label: 'UG 4-Year', rows: __UG4_ROWS__ }
+      };
+
       const METRIC_SPECS = [
-        {{ key: 'non_graduation_pct', label: 'Non-graduation %', colorscale: 'YlOrRd', reversescale: true }},
-        {{ key: 'placement_pct', label: 'Placement %', colorscale: 'Blues', reversescale: false }},
-        {{ key: 'higher_education_pct', label: 'Higher education %', colorscale: 'Purples', reversescale: false }}
+        { key: 'placement_pct', label: 'Placement %', colorscale: 'Blues', reversescale: false, ids: { ug3: 'map-placement-ug3', ug4: 'map-placement-ug4' } },
+        { key: 'non_graduation_pct', label: 'Non-graduation %', colorscale: 'YlOrRd', reversescale: true, ids: { ug3: 'map-nongrad-ug3', ug4: 'map-nongrad-ug4' } },
+        { key: 'higher_education_pct', label: 'Higher education %', colorscale: 'Purples', reversescale: false, ids: { ug3: 'map-he-ug3', ug4: 'map-he-ug4' } }
       ];
 
-      function buildTraces(geojson) {{
-        const noDataTrace = {{
+      function baseLayout(titleText) {
+        return {
+          paper_bgcolor: '#ffffff',
+          plot_bgcolor: '#ffffff',
+          margin: { l: 8, r: 8, t: 8, b: 8 },
+          height: 420,
+          geo: {
+            visible: false,
+            bgcolor: 'rgba(0,0,0,0)',
+            projection: { type: 'mercator' },
+            center: { lat: 22.8, lon: 79.0 },
+            lataxis: { range: [5, 38.5] },
+            lonaxis: { range: [67, 98] }
+          },
+          annotations: [{
+            text: titleText,
+            x: 0.02,
+            y: 1.04,
+            xref: 'paper',
+            yref: 'paper',
+            showarrow: false,
+            font: { size: 14, color: '#1B2A4A' }
+          }]
+        };
+      }
+
+      function buildMapTraces(rows, spec, zmin, zmax, geojson) {
+        const noDataTrace = {
           type: 'choropleth',
           geojson,
           featureidkey: 'properties.NAME_1',
@@ -229,118 +284,101 @@ def build_choropleth(metrics_df: pd.DataFrame) -> str:
           locationmode: 'geojson-id',
           colorscale: [[0, '#E5E7EB'], [1, '#E5E7EB']],
           showscale: false,
-          marker: {{ line: {{ color: '#FFFFFF', width: 0.8 }} }},
-          hovertemplate: '<b>%{{location}}</b><br>No mapped state public university outcome data available<extra></extra>',
-          visible: true
-        }};
+          marker: { line: { color: '#FFFFFF', width: 0.8 } },
+          hovertemplate: '<b>%{location}</b><br>No mapped data available<extra></extra>'
+        };
 
-        const metricTraces = METRIC_SPECS.map((spec, i) => {{
-          const locations = METRICS.map(row => row.map_state);
-          const z = METRICS.map(row => row[spec.key]);
-          const customdata = METRICS.map(row => [row.state, row.institution_count, row.graduates_represented, row.universities]);
-          return {{
-            type: 'choropleth',
-            geojson,
-            featureidkey: 'properties.NAME_1',
-            locations,
-            z,
-            locationmode: 'geojson-id',
-            colorscale: spec.colorscale,
-            reversescale: spec.reversescale,
-            marker: {{ line: {{ color: '#FFFFFF', width: 0.8 }} }},
-            colorbar: {{ title: spec.label }},
-            customdata,
-            hovertemplate: '<b>%{{customdata[0]}}</b><br>' + spec.label + ': <b>%{{z:.1f}}%</b><br>Institutions covered: %{{customdata[1]}}<br>Graduates represented: %{{customdata[2]:,}}<extra></extra>',
-            visible: i === 0
-          }};
-        }});
+        const metricRows = rows.filter(row => row[spec.key] !== null && row[spec.key] !== undefined);
+        const metricTrace = {
+          type: 'choropleth',
+          geojson,
+          featureidkey: 'properties.NAME_1',
+          locations: metricRows.map(row => row.map_state),
+          z: metricRows.map(row => row[spec.key]),
+          locationmode: 'geojson-id',
+          colorscale: spec.colorscale,
+          reversescale: spec.reversescale,
+          zmin,
+          zmax,
+          marker: { line: { color: '#FFFFFF', width: 0.8 } },
+          colorbar: { title: spec.label, thickness: 10, len: 0.65 },
+          customdata: metricRows.map(row => [row.state, row.institution_count || row.ug3_institution_count || row.ug4_institution_count, row.graduates_represented || row.ug3_graduates_represented || row.ug4_graduates_represented]),
+          hovertemplate: '<b>%{customdata[0]}</b><br>' + spec.label + ': <b>%{z:.1f}%</b><br>Institutions covered: %{customdata[1]}<br>Graduates represented: %{customdata[2]:,}<extra></extra>'
+        };
 
-        return [noDataTrace, ...metricTraces];
-      }}
+        return [noDataTrace, metricTrace];
+      }
 
-      const visibilityMaps = METRIC_SPECS.map((_, i) => {{
-        const visible = [true, false, false, false];
-        visible[i + 1] = true;
-        return visible;
-      }});
+      function renderAllMaps(geojson) {
+        METRIC_SPECS.forEach(spec => {
+          const values = [];
+          Object.values(PROGRAMS).forEach(program => {
+            program.rows.forEach(row => {
+              if (row[spec.key] !== null && row[spec.key] !== undefined) values.push(row[spec.key]);
+            });
+          });
+          const zmin = values.length ? Math.min(...values) : 0;
+          const zmax = values.length ? Math.max(...values) : 100;
 
-      function setActiveMetric(idx) {{
-        Plotly.restyle('india-heatmap', 'visible', visibilityMaps[idx]);
-        document.querySelectorAll('.metric-btn').forEach((btn, i) => {{
-          btn.classList.toggle('active', i === idx);
-        }});
-      }}
-
-      const layout = {{
-        paper_bgcolor: '#ffffff',
-        plot_bgcolor: '#ffffff',
-        margin: {{ l: 10, r: 10, t: 70, b: 10 }},
-        height: 760,
-        title: {{
-          text: 'India heat map — state public university outcomes',
-          x: 0.02,
-          font: {{ size: 22, color: '#1B2A4A' }}
-        }},
-        annotations: [{{
-          text: 'Gray states/UTs = no available mapped university outcome data',
-          x: 0.02, y: 1.05, xref: 'paper', yref: 'paper', showarrow: false,
-          font: {{ size: 12, color: '#6B7280' }}
-        }}],
-        geo: {{
-          visible: false,
-          bgcolor: 'rgba(0,0,0,0)',
-          projection: {{ type: 'mercator' }},
-          center: {{ lat: 22.8, lon: 79.0 }},
-          lataxis: {{ range: [5, 38.5] }},
-          lonaxis: {{ range: [67, 98] }}
-        }}
-      }};
+          Object.entries(PROGRAMS).forEach(([programKey, program]) => {
+            Plotly.newPlot(
+              spec.ids[programKey],
+              buildMapTraces(program.rows, spec, zmin, zmax, geojson),
+              baseLayout(program.label),
+              { responsive: true, displayModeBar: false }
+            );
+          });
+        });
+      }
 
       fetch(GEOJSON_URL)
         .then(resp => resp.json())
-        .then(geojson => Plotly.newPlot('india-heatmap', buildTraces(geojson), layout, {{ responsive: true, displayModeBar: true }}))
-        .then(() => {{
-          document.querySelectorAll('.metric-btn').forEach((btn) => {{
-            btn.addEventListener('click', () => setActiveMetric(Number(btn.dataset.metricIndex)));
-          }});
-          setActiveMetric(0);
-        }})
-        .catch(err => {{
-          document.getElementById('india-heatmap').innerHTML = '<div style="padding:24px;color:#B91C1C">Map failed to load. Please refresh the page.</div>';
+        .then(geojson => renderAllMaps(geojson))
+        .catch(err => {
+          document.querySelectorAll('.mini-map').forEach(el => {
+            el.innerHTML = '<div style="padding:24px;color:#B91C1C">Map failed to load. Please refresh the page.</div>';
+          });
           console.error(err);
-        }});
+        });
     </script>
     """
 
+    return (
+        html.replace("__GEOJSON_URL__", geojson_url_json)
+        .replace("__ALL_STATES__", states_json)
+        .replace("__UG3_ROWS__", ug3_rows)
+        .replace("__UG4_ROWS__", ug4_rows)
+    )
 
-def build_html(metrics_df: pd.DataFrame, chart_html: str) -> str:
-    overall_non_grad = metrics_df["non_graduation_pct"].dropna().mean()
-    overall_place = metrics_df["placement_pct"].dropna().mean()
-    overall_he = metrics_df["higher_education_pct"].dropna().mean()
-    coverage_states = int(len(metrics_df))
-    coverage_insts = int(metrics_df["institution_count"].sum())
+
+def build_html(metrics_df: pd.DataFrame, ug3_metrics_df: pd.DataFrame, ug4_metrics_df: pd.DataFrame, chart_html: str) -> str:
+    coverage_states_total = int(len(metrics_df))
+    coverage_states_ug3 = int(len(ug3_metrics_df))
+    coverage_states_ug4 = int(len(ug4_metrics_df))
+    coverage_insts = len(STATE_BY_INST_RAW)
+    no_data_count = 36 - coverage_states_total
 
     table_df = metrics_df[[
         "state",
-        "institution_count",
-        "graduates_represented",
-        "non_graduation_pct",
-        "placement_pct",
-        "higher_education_pct",
+        "ug3_non_graduation_pct",
+        "ug4_non_graduation_pct",
+        "ug3_placement_pct",
+        "ug4_placement_pct",
+        "ug3_higher_education_pct",
+        "ug4_higher_education_pct",
     ]].copy()
     table_df.columns = [
         "State / UT",
-        "Institutions",
-        "Graduates represented",
-        "Non-graduation %",
-        "Placement %",
-        "Higher education %",
+        "UG3 Non-grad %",
+        "UG4 Non-grad %",
+        "UG3 Placement %",
+        "UG4 Placement %",
+        "UG3 Higher Ed %",
+        "UG4 Higher Ed %",
     ]
-    for col in ["Non-graduation %", "Placement %", "Higher education %"]:
+    for col in table_df.columns[1:]:
         table_df[col] = table_df[col].map(lambda v: "—" if pd.isna(v) else f"{v:.1f}")
     table_html = table_df.to_html(index=False, classes="metric-table", border=0)
-
-    no_data_count = 36 - coverage_states
 
     return f"""<!DOCTYPE html>
 <html lang=\"en\">
@@ -351,7 +389,7 @@ def build_html(metrics_df: pd.DataFrame, chart_html: str) -> str:
 <style>
   * {{ box-sizing: border-box; }}
   body {{ margin: 0; font-family: 'Segoe UI', Arial, sans-serif; background: #f4f7fb; color: #18212f; }}
-  .wrap {{ max-width: 1400px; margin: 0 auto; padding: 24px; }}
+  .wrap {{ max-width: 1500px; margin: 0 auto; padding: 24px; }}
   .hero {{ background: linear-gradient(135deg, #1B2A4A, #23486A); color: white; border-radius: 16px; padding: 22px 24px; box-shadow: 0 10px 24px rgba(0,0,0,.12); }}
   .hero h1 {{ margin: 0 0 8px; color: #F5A623; font-size: 1.7rem; }}
   .hero p {{ margin: 6px 0; font-size: 0.95rem; line-height: 1.55; color: #E5EEF8; }}
@@ -362,49 +400,50 @@ def build_html(metrics_df: pd.DataFrame, chart_html: str) -> str:
   .section {{ background: white; border-radius: 14px; padding: 16px; box-shadow: 0 2px 12px rgba(20,35,60,.08); margin-top: 18px; }}
   .section h2 {{ margin: 0 0 6px; color: #1B2A4A; font-size: 1.1rem; }}
   .section p {{ margin: 0 0 10px; color: #5b6472; font-size: 0.9rem; line-height: 1.55; }}
-  .map-toolbar {{ display:flex; flex-wrap:wrap; align-items:center; gap:12px; margin: 8px 0 8px; }}
-  .map-control-label {{ font-size: 0.88rem; font-weight: 600; color: #374151; }}
-  .map-controls {{ display:flex; flex-wrap:wrap; gap:10px; }}
-  .metric-btn {{ border:1px solid #CBD5E1; background: linear-gradient(180deg, #FFFFFF, #F3F4F6); color:#1F2937; border-radius:999px; padding:9px 14px; font-size:0.86rem; font-weight:600; cursor:pointer; transition:all .18s ease; box-shadow:0 1px 4px rgba(0,0,0,.06); }}
-  .metric-btn:hover {{ transform: translateY(-1px); border-color:#93C5FD; box-shadow:0 4px 10px rgba(59,130,246,.14); }}
-  .metric-btn.active {{ background: linear-gradient(135deg, #1B2A4A, #2563EB); color:#fff; border-color:#1D4ED8; box-shadow:0 6px 14px rgba(37,99,235,.22); }}
+  .metric-row {{ margin-top: 18px; }}
+  .metric-row:first-of-type {{ margin-top: 8px; }}
+  .metric-header h3 {{ margin: 0 0 4px; color: #17324F; font-size: 1rem; }}
+  .metric-header p {{ margin: 0 0 10px; color: #6B7280; font-size: 0.84rem; }}
+  .dual-map-grid {{ display:grid; grid-template-columns: 1fr 1fr; gap:16px; }}
+  .map-card {{ background:#FBFDFF; border:1px solid #E5E7EB; border-radius:12px; padding:12px; box-shadow: inset 0 1px 0 rgba(255,255,255,.8); }}
+  .map-card-title {{ color:#1B2A4A; font-size:0.95rem; font-weight:700; margin-bottom:6px; }}
+  .mini-map {{ height:420px; }}
   .metric-table {{ width: 100%; border-collapse: collapse; font-size: 0.9rem; margin-top: 8px; }}
   .metric-table th {{ background: #1B2A4A; color: #F5A623; padding: 10px; text-align: left; }}
   .metric-table td {{ border: 1px solid #E5E7EB; padding: 9px 10px; }}
   .metric-table tr:nth-child(even) {{ background: #F9FAFB; }}
   .note {{ font-size: 0.82rem; color: #6B7280; margin-top: 10px; }}
-  @media (max-width: 900px) {{ .grid {{ grid-template-columns: 1fr 1fr; }} }}
-  @media (max-width: 640px) {{ .grid {{ grid-template-columns: 1fr; }} .wrap {{ padding: 14px; }} }}
+  @media (max-width: 1000px) {{ .dual-map-grid, .grid {{ grid-template-columns: 1fr; }} }}
+  @media (max-width: 640px) {{ .wrap {{ padding: 14px; }} }}
 </style>
 </head>
 <body>
   <div class=\"wrap\">
     <div class=\"hero\">
       <h1>India heat map for State Public Universities</h1>
-      <p>This view aggregates NIRF state public university outcome data by state and union territory.</p>
-      <p><strong>Method used:</strong> latest reported UG 3-year and UG 4-year outcome cycle per university, combined with graduate-count weighting.</p>
+      <p>This page compares <strong>UG 3-Year</strong> and <strong>UG 4-Year</strong> state outcomes side by side for placement, non-graduation, and higher education.</p>
+      <p><strong>Method used:</strong> latest reported cycle per university, aggregated state-wise using graduate-count weighting.</p>
       <p><strong>State mapping research basis:</strong> matched from official university names, city identifiers in the NIRF list, and public institutional references.</p>
     </div>
 
     <div class=\"grid\">
-      <div class=\"card\"><div class=\"k\">States / UTs with data</div><div class=\"v\">{coverage_states}</div></div>
-      <div class=\"card\"><div class=\"k\">States / UTs without data</div><div class=\"v\">{no_data_count}</div></div>
+      <div class=\"card\"><div class=\"k\">States / UTs with UG3 data</div><div class=\"v\">{coverage_states_ug3}</div></div>
+      <div class=\"card\"><div class=\"k\">States / UTs with UG4 data</div><div class=\"v\">{coverage_states_ug4}</div></div>
       <div class=\"card\"><div class=\"k\">Institutions mapped</div><div class=\"v\">{coverage_insts}</div></div>
-      <div class=\"card\"><div class=\"k\">Avg placement %</div><div class=\"v\">{overall_place:.1f}</div></div>
+      <div class=\"card\"><div class=\"k\">States / UTs without usable data</div><div class=\"v\">{no_data_count}</div></div>
     </div>
 
     <div class=\"section\">
-      <h2>Interactive heat map</h2>
-      <p>Use the buttons above the map to switch between non-graduation, placement, and higher education outcomes.</p>
+      <h2>Side-by-side UG 3 and UG 4 maps</h2>
+      <p>Each row compares the same metric across UG 3-Year and UG 4-Year programmes for the full India map.</p>
       {chart_html}
-      <div class=\"note\">Non-graduation is a risk indicator, while placement and higher education show positive transitions after graduation.</div>
+      <div class=\"note\">Gray states and UTs indicate no available mapped university outcome data for that programme.</div>
     </div>
 
     <div class=\"section\">
       <h2>State-wise summary table</h2>
-      <p>The table below shows the weighted averages used in the map.</p>
+      <p>The table below shows the state-level percentages used in the side-by-side maps.</p>
       {table_html}
-      <div class=\"note\">Blank values mean the relevant outcome metric was not reported in the latest available cycle for that state’s institutions.</div>
     </div>
   </div>
 </body>
@@ -415,20 +454,23 @@ def build_html(metrics_df: pd.DataFrame, chart_html: str) -> str:
 def main() -> None:
     ug3 = extract_latest_records(UG3_CSV, "UG 3-Year")
     ug4 = extract_latest_records(UG4_CSV, "UG 4-Year")
-    combined = pd.concat([ug3, ug4], ignore_index=True)
 
-    metrics_df = aggregate_state_metrics(combined)
+    ug3_metrics = aggregate_state_metrics(ug3, "ug3_")
+    ug4_metrics = aggregate_state_metrics(ug4, "ug4_")
+    metrics_df = pd.merge(ug3_metrics, ug4_metrics, on=["state", "map_state"], how="outer").sort_values("state").reset_index(drop=True)
+
     metrics_df.to_csv(OUT_METRICS_CSV, index=False)
     lookup_table().to_csv(OUT_LOOKUP_CSV, index=False)
 
-    chart_html = build_choropleth(metrics_df)
-    OUT_HTML.write_text(build_html(metrics_df, chart_html), encoding="utf-8")
+    chart_html = build_choropleth(ug3_metrics, ug4_metrics)
+    OUT_HTML.write_text(build_html(metrics_df, ug3_metrics, ug4_metrics, chart_html), encoding="utf-8")
 
     print(f"Created: {OUT_HTML}")
     print(f"Created: {OUT_METRICS_CSV}")
     print(f"Created: {OUT_LOOKUP_CSV}")
-    print(f"States covered: {len(metrics_df)}")
-    print(metrics_df[["state", "non_graduation_pct", "placement_pct", "higher_education_pct"]].head(12).to_string(index=False))
+    print(f"UG3 states covered: {len(ug3_metrics)}")
+    print(f"UG4 states covered: {len(ug4_metrics)}")
+    print(metrics_df[["state", "ug3_placement_pct", "ug4_placement_pct"]].head(12).to_string(index=False))
 
 
 if __name__ == "__main__":
