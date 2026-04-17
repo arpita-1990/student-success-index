@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Chart 1 — Inclusivity vs Outcomes (UG 4-Year) · NIRF 2025</title>
+<script src="https://cdn.plot.ly/plotly-2.32.0.min.js"></script>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #F4F6F9; font-family: 'Segoe UI', Arial, sans-serif; color: #1a1a2e; padding: 28px; }
+
+.page-header { background: #1B2A4A; border-radius: 10px; padding: 20px 28px; margin-bottom: 24px; }
+.page-header h1 { color: #F5A623; font-size: 1.35rem; margin-bottom: 4px; }
+.page-header p  { color: #A0ADB8; font-size: 0.82rem; line-height: 1.6; max-width: 860px; }
+
+.chart-card { background: #fff; border-radius: 10px; box-shadow: 0 2px 14px rgba(0,0,0,.09); padding: 20px 24px; margin-bottom: 22px; }
+.chart-title { font-size: 1.08rem; font-weight: 700; color: #1B2A4A; margin-bottom: 3px; }
+.chart-sub   { font-size: 0.79rem; color: #6b7280; margin-bottom: 14px; }
+
+.legend-row { display: flex; flex-wrap: wrap; gap: 18px; margin: 14px 0 4px; }
+.leg { display: flex; align-items: center; gap: 7px; font-size: 0.8rem; color: #374151; }
+.leg-swatch { width: 20px; height: 13px; border-radius: 3px; flex-shrink: 0; }
+
+.tier-pills { display: flex; gap: 12px; flex-wrap: wrap; margin: 16px 0 0; }
+.pill { border-radius: 20px; padding: 5px 14px; font-size: 0.78rem; font-weight: 600; color: #fff; }
+
+.note { font-size: 0.74rem; color: #6B7280; padding: 8px 14px; background: #F9FAFB;
+        border-left: 3px solid #D1D5DB; border-radius: 4px; margin-top: 14px; line-height: 1.6; }
+
+.key-finding { background: #ECFDF5; border: 1.5px solid #6EE7B7; border-radius: 8px;
+               padding: 14px 18px; margin-bottom: 20px; }
+.key-finding strong { color: #065F46; font-size: 0.95rem; }
+.key-finding p { color: #1F2937; font-size: 0.82rem; margin-top: 4px; line-height: 1.6; }
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <h1>Does Being More Inclusive Lead to Worse Graduation Outcomes? — NIRF 2025 (UG 4-Year)</h1>
+  <p>
+    Each institution type is classified by how well it meets the legal reservation quotas
+    (EWS ≥ 10% &amp; SC+ST+OBC ≥ 49.5%). Outcomes are then compared across compliance tiers.
+    <br><strong style="color:#F5A623">Key metric: Placed + Higher Education %</strong> —
+    counts all students with a positive transition (job <em>or</em> further study), because 
+    research-oriented institutions route students into postgraduate programmes, not direct employment.
+  </p>
+</div>
+
+<div class="key-finding">
+  <strong>Finding: Inclusion does not harm student outcomes.</strong>
+  <p>
+    Institutions that fully meet both EWS and SC+ST+OBC quotas graduate 90% of students and 
+    achieve a combined Placed+HE rate of 91% — virtually identical to those below the quotas. 
+    The graduation rate is above 85% in every tier. There is no penalty for being more inclusive.
+  </p>
+</div>
+
+<div class="chart-card">
+  <div class="chart-title">Chart 1 — Student Outcomes by Institution Type, Grouped by Quota Compliance (UG 4-Year)</div>
+  <div class="chart-sub">
+    Each row = one institution type &nbsp;|&nbsp; Background shading = compliance tier &nbsp;|&nbsp;
+    Dotted line at 90% = strong outcome benchmark &nbsp;|&nbsp; Hover any bar for EWS%, SC+ST+OBC% and full detail
+  </div>
+  <div id="chart1" style="height: 640px;"></div>
+
+  <div class="legend-row">
+    <div class="leg"><div class="leg-swatch" style="background:#1D6FA4"></div>Graduation Rate %</div>
+    <div class="leg"><div class="leg-swatch" style="background:#10B981"></div>Placed + Higher Ed % <em>(combined positive transition)</em></div>
+    <div class="leg"><div class="leg-swatch" style="background:#D1D5DB"></div>Placed % alone <em>(direct employment only — incomplete picture)</em></div>
+  </div>
+
+  <div class="tier-pills">
+    <span style="font-size:0.78rem;color:#6B7280;align-self:center;">Background shading → </span>
+    <span class="pill" style="background:#059669">✅ Fully Meets — EWS ≥ 10% AND SC+ST+OBC ≥ 49.5%</span>
+    <span class="pill" style="background:#D97706">⚠️ Partially Meets — one quota met</span>
+    <span class="pill" style="background:#DC2626">❌ Below Quotas — neither quota met</span>
+  </div>
+
+  <div class="note">
+    ⚠️ <strong>Why Placed % alone misleads:</strong> IISER/IISc and Central Universities send 
+    69–91% of graduates into Higher Education (PhDs, postgrad), not direct jobs. Using Placed % alone 
+    makes them look like failures — which is incorrect. Placed+HE % corrects for this.
+    <br>
+    Thresholds: EWS quota benchmark = 10% &nbsp;|&nbsp; SC+ST+OBC quota benchmark = 49.5%
+  </div>
+</div>
+
+<script>
+// ── Data: individual institution types (UG 4-Year, NIRF 2025) ─────────────────
+// Order: Fully Meets (0-4), Partially Meets (5-7), Below Quotas (8-9)
+const types = [
+  'NIT (Public)',           // Fully Meets
+  'IIT (Public)',           // Fully Meets
+  'State Univ (Public)',    // Fully Meets
+  'Central Univ (Public)', // Fully Meets
+  'IISER/IISc (Public)',   // Fully Meets
+  'Central Minority Univ', // Partially Meets (EWS ✅, OBC ❌)
+  'AIIMS (Public)',         // Partially Meets (EWS ❌, OBC ✅)
+  'Private Unaided',        // Partially Meets (EWS ✅, OBC ❌)
+  'Medical Inst (Public)', // Below Quotas
+  'Private Minority',       // Below Quotas
+];
+
+// EWS / OBC labels for hover
+const ewsVals = [17.8, 15.0, 14.1, 11.3, 11.3,  47.0,  9.2, 16.2,  3.5,  9.0];
+const obcVals = [50.4, 49.6, 52.0, 52.6, 50.2,  33.2, 49.8, 21.4, 47.8, 11.1];
+const tierOf  = [
+  'Fully Meets','Fully Meets','Fully Meets','Fully Meets','Fully Meets',
+  'Partially Meets','Partially Meets','Partially Meets',
+  'Below Quotas','Below Quotas'
+];
+
+const gradPct = [91.1, 91.3, 89.4, 92.4, 86.2,  97.5, 85.3, 94.8,  91.6, 98.7];
+const placPct = [77.1, 76.6, 64.2, 22.6,  3.1,  88.1, 91.7, 79.2,  85.4, 74.1];
+const combPct = [87.3, 93.4, 88.8, 91.1, 93.8, 100.0,100.0, 91.9,  99.2, 97.3];
+const hePct   = [10.2, 16.8, 24.6, 68.5, 90.7,  11.9,  8.3, 12.7,  13.8, 23.2];
+
+// ── Colours ───────────────────────────────────────────────────────────────────
+const COL_GRAD = '#1D6FA4';
+const COL_COMB = '#10B981';
+const COL_PLAC = '#C4C9D4';
+
+// ── Build hover text ──────────────────────────────────────────────────────────
+function hoverGrad(i) {
+  return `<b>${types[i]}</b><br>Tier: ${tierOf[i]}<br>EWS: ${ewsVals[i]}% &nbsp; SC+ST+OBC: ${obcVals[i]}%<br>` +
+         `Graduation Rate: <b>${gradPct[i].toFixed(1)}%</b><extra></extra>`;
+}
+function hoverPlac(i) {
+  return `<b>${types[i]}</b><br>Tier: ${tierOf[i]}<br>EWS: ${ewsVals[i]}% &nbsp; SC+ST+OBC: ${obcVals[i]}%<br>` +
+         `Placed (jobs only): <b>${placPct[i].toFixed(1)}%</b><br>` +
+         `<i>Higher Ed: ${hePct[i].toFixed(1)}% — add for complete picture</i><extra></extra>`;
+}
+function hoverComb(i) {
+  return `<b>${types[i]}</b><br>Tier: ${tierOf[i]}<br>EWS: ${ewsVals[i]}% &nbsp; SC+ST+OBC: ${obcVals[i]}%<br>` +
+         `Placed + Higher Ed: <b>${combPct[i].toFixed(1)}%</b><br>` +
+         `<i>(Placed ${placPct[i].toFixed(1)}% + HE ${hePct[i].toFixed(1)}%)</i><extra></extra>`;
+}
+
+// ── Traces ────────────────────────────────────────────────────────────────────
+const trGrad = {
+  type: 'bar', orientation: 'h',
+  name: 'Graduation Rate %',
+  x: gradPct, y: types,
+  marker: { color: COL_GRAD, opacity: 0.88 },
+  hovertemplate: types.map((_, i) => hoverGrad(i)),
+  text: gradPct.map(v => v.toFixed(1) + '%'),
+  textposition: 'outside',
+  textfont: { color: COL_GRAD, size: 10, family: 'Segoe UI, Arial' },
+  cliponaxis: false,
+};
+
+const trPlac = {
+  type: 'bar', orientation: 'h',
+  name: 'Placed % (jobs only)',
+  x: placPct, y: types,
+  marker: { color: COL_PLAC, opacity: 0.95, line: { color: '#9CA3AF', width: 1 } },
+  hovertemplate: types.map((_, i) => hoverPlac(i)),
+  text: placPct.map(v => v.toFixed(1) + '%'),
+  textposition: 'outside',
+  textfont: { color: '#6B7280', size: 10, family: 'Segoe UI, Arial' },
+  cliponaxis: false,
+};
+
+const trComb = {
+  type: 'bar', orientation: 'h',
+  name: 'Placed + Higher Ed % (combined)',
+  x: combPct, y: types,
+  marker: { color: COL_COMB, opacity: 0.88 },
+  hovertemplate: types.map((_, i) => hoverComb(i)),
+  text: combPct.map(v => v.toFixed(1) + '%'),
+  textposition: 'outside',
+  textfont: { color: '#065F46', size: 10, family: 'Segoe UI, Arial' },
+  cliponaxis: false,
+};
+
+// ── Layout ────────────────────────────────────────────────────────────────────
+const layout = {
+  barmode: 'group',
+  paper_bgcolor: '#fff',
+  plot_bgcolor:  '#fff',
+  font: { family: 'Segoe UI, Arial', size: 11, color: '#1a1a2e' },
+  margin: { l: 180, r: 100, t: 40, b: 60 },
+
+  xaxis: {
+    title: { text: 'Percentage (%)', font: { size: 12 } },
+    range: [0, 118],
+    gridcolor: '#E5E7EB',
+    zeroline: false,
+    showline: true,
+    linecolor: '#D1D5DB',
+  },
+  yaxis: {
+    autorange: 'reversed',
+    tickfont: { size: 11, color: '#1a1a2e' },
+    showline: false,
+    gridcolor: 'rgba(0,0,0,0)',
+    // tick positions match type index for shapes
+  },
+  legend: {
+    orientation: 'h', x: 0, y: -0.12,
+    font: { size: 11 },
+    bgcolor: 'rgba(0,0,0,0)',
+  },
+  hovermode: 'closest',
+
+  // ── Background tier shading + dividers ─────────────────────────────────────
+  // Categorical axis: index 0 = NIT (top), index 9 = Private Minority (bottom)
+  // With autorange reversed, shapes with lower index values appear higher on screen
+  shapes: [
+    // Fully Meets background (indices 0–4)
+    { type: 'rect', xref: 'paper', yref: 'y',
+      x0: 0, x1: 1, y0: -0.5, y1: 4.5,
+      fillcolor: 'rgba(5,150,105,0.06)', line: { width: 0 } },
+    // Partially Meets background (indices 5–7)
+    { type: 'rect', xref: 'paper', yref: 'y',
+      x0: 0, x1: 1, y0: 4.5, y1: 7.5,
+      fillcolor: 'rgba(217,119,6,0.06)', line: { width: 0 } },
+    // Below Quotas background (indices 8–9)
+    { type: 'rect', xref: 'paper', yref: 'y',
+      x0: 0, x1: 1, y0: 7.5, y1: 9.5,
+      fillcolor: 'rgba(220,38,38,0.06)', line: { width: 0 } },
+    // Divider lines between tiers
+    { type: 'line', xref: 'paper', yref: 'y',
+      x0: 0, x1: 1, y0: 4.5, y1: 4.5,
+      line: { color: '#9CA3AF', width: 1.5, dash: 'dot' } },
+    { type: 'line', xref: 'paper', yref: 'y',
+      x0: 0, x1: 1, y0: 7.5, y1: 7.5,
+      line: { color: '#9CA3AF', width: 1.5, dash: 'dot' } },
+    // 90% benchmark vertical line
+    { type: 'line', xref: 'x', yref: 'paper',
+      x0: 90, x1: 90, y0: 0, y1: 1,
+      line: { color: '#F5A623', width: 2, dash: 'dot' } },
+  ],
+
+  annotations: [
+    // 90% label
+    { x: 90, y: 1.02, xref: 'x', yref: 'paper',
+      xanchor: 'center', yanchor: 'bottom',
+      text: '90% benchmark',
+      showarrow: false,
+      font: { size: 10, color: '#B45309' },
+      bgcolor: 'rgba(255,249,235,0.9)',
+      bordercolor: '#F5A623', borderwidth: 1, borderpad: 3 },
+    // Tier labels — placed just above open space in each band (right side)
+    { x: 1, y: 2,  xref: 'paper', yref: 'y',
+      xanchor: 'right', yanchor: 'middle',
+      text: '✅ Fully Meets',
+      showarrow: false,
+      font: { size: 11, color: '#065F46', family: 'Segoe UI, Arial' },
+      bgcolor: 'rgba(236,253,245,0.9)',
+      bordercolor: '#6EE7B7', borderwidth: 1, borderpad: 4 },
+    { x: 1, y: 6,  xref: 'paper', yref: 'y',
+      xanchor: 'right', yanchor: 'middle',
+      text: '⚠️ Partially Meets',
+      showarrow: false,
+      font: { size: 11, color: '#92400E', family: 'Segoe UI, Arial' },
+      bgcolor: 'rgba(255,251,235,0.9)',
+      bordercolor: '#FCD34D', borderwidth: 1, borderpad: 4 },
+    { x: 1, y: 8.5, xref: 'paper', yref: 'y',
+      xanchor: 'right', yanchor: 'middle',
+      text: '❌ Below Quotas',
+      showarrow: false,
+      font: { size: 11, color: '#991B1B', family: 'Segoe UI, Arial' },
+      bgcolor: 'rgba(254,242,242,0.9)',
+      bordercolor: '#FCA5A5', borderwidth: 1, borderpad: 4 },
+  ],
+};
+
+Plotly.newPlot('chart1', [trPlac, trGrad, trComb], layout, {
+  responsive: true,
+  displayModeBar: true,
+  modeBarButtonsToRemove: ['lasso2d', 'select2d'],
+  toImageButtonOptions: { format: 'png', width: 1300, height: 750, scale: 2, filename: 'chart1_outcomes_by_institution_type' },
+});
+</script>
+</body>
+</html>

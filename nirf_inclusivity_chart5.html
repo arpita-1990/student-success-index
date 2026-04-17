@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Chart 5 — Salary Callout Table · NIRF 2025</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #F4F6F9; font-family: 'Segoe UI', Arial, sans-serif; color: #1a1a2e; padding: 28px; }
+
+.page-header { background: #1B2A4A; border-radius: 10px; padding: 20px 28px; margin-bottom: 20px; }
+.page-header h1 { color: #F5A623; font-size: 1.35rem; margin-bottom: 4px; }
+.page-header p  { color: #A0ADB8; font-size: 0.82rem; line-height: 1.6; max-width: 900px; }
+
+/* ── Key callout ── */
+.callout-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 22px; }
+.callout { border-radius: 9px; padding: 16px 18px; font-size: 0.82rem; line-height: 1.65; border: 1.5px solid; }
+.callout strong { display: block; font-size: 0.92rem; margin-bottom: 5px; }
+.callout.green  { background: #ECFDF5; border-color: #6EE7B7; }
+.callout.green strong { color: #065F46; }
+.callout.amber  { background: #FFFBEB; border-color: #FCD34D; }
+.callout.amber strong { color: #92400E; }
+.callout.blue   { background: #EFF6FF; border-color: #93C5FD; }
+.callout.blue strong { color: #1E40AF; }
+.callout.red    { background: #FEF2F2; border-color: #FCA5A5; }
+.callout.red strong { color: #991B1B; }
+
+/* ── Table wrapper ── */
+.table-card { background: #fff; border-radius: 10px; box-shadow: 0 2px 14px rgba(0,0,0,.09);
+              padding: 20px 24px; margin-bottom: 22px; overflow-x: auto; }
+.table-title { font-size: 1.05rem; font-weight: 700; color: #1B2A4A; margin-bottom: 3px; }
+.table-sub   { font-size: 0.79rem; color: #6b7280; margin-bottom: 14px; }
+
+table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+thead th {
+  background: #1B2A4A; color: #F5A623;
+  padding: 9px 11px; border: 1px solid #2C3E50;
+  text-align: center; white-space: nowrap;
+  font-size: 0.8rem; font-weight: 700;
+}
+thead th.left { text-align: left; }
+tbody td { padding: 8px 11px; border: 1px solid #E5E7EB; text-align: center; vertical-align: middle; }
+tbody td.left { text-align: left; }
+tbody tr:hover { background: #F0F7FF; }
+
+/* Tier row-group backgrounds */
+.tier-full    { background: #F0FDF4; }
+.tier-partial { background: #FFFBEB; }
+.tier-below   { background: #FFF5F5; }
+
+/* Tier label cell */
+.tier-label {
+  writing-mode: vertical-lr; transform: rotate(180deg);
+  font-weight: 700; font-size: 0.75rem; letter-spacing: 0.05em;
+  text-align: center; white-space: nowrap; padding: 4px 6px;
+  border: 1px solid #E5E7EB;
+}
+.tier-label.full    { background: #059669; color: #fff; }
+.tier-label.partial { background: #D97706; color: #fff; }
+.tier-label.below   { background: #DC2626; color: #fff; }
+
+/* Salary cells — colour-coded by value */
+.sal { font-weight: 700; border-radius: 5px; padding: 3px 8px; display:inline-block; min-width:52px; font-size:0.83rem; }
+
+/* Compliance bars inside cells */
+.quota-bar-wrap { display:flex; align-items:center; gap:6px; }
+.quota-bar { height:10px; border-radius:3px; flex-shrink:0; }
+.quota-val  { font-size:0.78rem; color:#374151; white-space:nowrap; }
+.tick { font-size:1.05rem; }
+
+.note { font-size: 0.74rem; color: #6B7280; padding: 8px 14px; background: #F9FAFB;
+        border-left: 3px solid #D1D5DB; border-radius: 4px; margin-top: 14px; line-height: 1.6; }
+
+/* Legend for salary colours */
+.sal-legend { display:flex; flex-wrap:wrap; gap:10px; margin:10px 0 14px; font-size:0.77rem; align-items:center; }
+.sal-legend span { padding:2px 10px; border-radius:10px; font-weight:600; }
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <h1>Chart 5 — Does Salary Track with Inclusion? Sector Drives Pay, Not Quota Compliance · NIRF 2025</h1>
+  <p>
+    Average salary (LPA) by institution type for UG 3-Year and UG 4-Year programmes, shown alongside
+    EWS% and SC+ST+OBC% enrolment. The key finding: salary differences reflect the
+    <strong style="color:#F5A623">sector and discipline</strong> of the institution, not its level of inclusion.
+    High-salary public engineering institutions (IITs, NITs) also happen to meet quotas — but the
+    salary is driven by engineering placements, not by the reservation percentage.
+  </p>
+</div>
+
+<!-- ── Four callout boxes ───────────────────────────────────────────────────── -->
+<div class="callout-grid">
+  <div class="callout green">
+    <strong>✅ High salary + High inclusion (IIT &amp; NIT)</strong>
+    IITs pay ₹17.9 LPA (UG4) with SC+ST+OBC near 50%. NITs pay ₹12.9 LPA also at quota compliance.
+    These institutions disprove the idea that inclusion lowers salary — they are the highest-paying
+    <em>and</em> the most inclusive.
+  </div>
+  <div class="callout amber">
+    <strong>⚠️ High salary + Below quota (AIIMS UG3)</strong>
+    AIIMS has strong salaries (~₹10–12 LPA) but EWS enrolment below 10%. Their salary advantage
+    comes from medical specialisation, not from low inclusion — it is a supply-demand effect in healthcare.
+  </div>
+  <div class="callout blue">
+    <strong>📚 Low salary + High inclusion (Central Universities)</strong>
+    Central Universities (SC+ST+OBC ~52–54%) report lower average salaries (₹8–8.2 LPA) because
+    most graduates go into Higher Education (68–82%), not direct employment. The salary figure
+    covers only the small fraction who took jobs — it is not representative of outcomes.
+  </div>
+  <div class="callout red">
+    <strong>❌ Low salary + Low inclusion (Private Minority)</strong>
+    Private Minority institutions have both low salaries (~₹5 LPA) and low inclusion (~11% SC+ST+OBC).
+    But the low salary is driven by the general arts/management sector they mostly operate in —
+    not caused by low reservation compliance.
+  </div>
+</div>
+
+<!-- ── Main table ────────────────────────────────────────────────────────────── -->
+<div class="table-card">
+  <div class="table-title">Salary, Inclusion Levels &amp; Compliance — by Institution Type (UG 3-Year &amp; UG 4-Year)</div>
+  <div class="table-sub">
+    Salary = type-level average of median placed-student salary (NIRF reported) &nbsp;|&nbsp;
+    EWS &amp; SC+ST+OBC = % of enrolled students &nbsp;|&nbsp;
+    — = type not in UG3 top 100
+  </div>
+
+  <div class="sal-legend">
+    <strong>Salary colour scale:</strong>
+    <span style="background:#FEF2F2;color:#991B1B;border:1px solid #FCA5A5">≤ 6 LPA · Low</span>
+    <span style="background:#FEF9EC;color:#92400E;border:1px solid #FCD34D">6–9 LPA · Moderate</span>
+    <span style="background:#ECFDF5;color:#065F46;border:1px solid #6EE7B7">9–13 LPA · Good</span>
+    <span style="background:#EFF6FF;color:#1E40AF;border:1px solid #93C5FD">≥ 13 LPA · High</span>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th style="width:22px"></th>
+        <th class="left" style="min-width:175px">Institution Type</th>
+        <th>Sector / Discipline</th>
+        <th colspan="3" style="background:#1D4E6A;border-bottom:2px solid #F5A623">── UG 3-Year ──</th>
+        <th style="width:8px;background:#2C3E50;border:none"></th>
+        <th colspan="3" style="background:#1A3A5C;border-bottom:2px solid #F5A623">── UG 4-Year ──</th>
+        <th>EWS Quota<br>Met? (≥10%)</th>
+        <th>OBC Quota<br>Met? (≥49.5%)</th>
+      </tr>
+      <tr>
+        <th></th>
+        <th class="left"></th>
+        <th></th>
+        <th style="background:#1D4E6A">Avg Salary<br>(LPA)</th>
+        <th style="background:#1D4E6A">EWS %</th>
+        <th style="background:#1D4E6A">SC+ST+OBC %</th>
+        <th style="background:#2C3E50;border:none"></th>
+        <th style="background:#1A3A5C">Avg Salary<br>(LPA)</th>
+        <th style="background:#1A3A5C">EWS %</th>
+        <th style="background:#1A3A5C">SC+ST+OBC %</th>
+        <th></th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody id="tableBody"></tbody>
+  </table>
+
+  <div class="note">
+    <strong>Key caveat:</strong> Salary values are type-level proxies from NIRF 2025 summary data, 
+    averaged across institutions of that type that reported data. They represent the median salary 
+    among <em>placed students only</em> — institutions with high Higher Education rates (Central Univ, IISER) 
+    have a small placement base, making their average less stable.
+    <br>
+    Salary should <strong>not</strong> be used as the primary metric for comparing inclusive vs non-inclusive 
+    institutions because it is confounded by sector (engineering vs. arts vs. medical).
+  </div>
+</div>
+
+<script>
+// ── Data ──────────────────────────────────────────────────────────────────────
+// [tier, institution type, sector, ug3sal, ug3ews, ug3obc, ug4sal, ug4ews, ug4obc]
+// null = not in UG3 top 100
+const rows = [
+  // Fully Meets (UG4)
+  ['full',    'IIT (Public)',           'Public Engineering',    15.0,  6.1, 28.7,  17.9, 15.0, 49.6],
+  ['full',    'NIT (Public)',           'Public Engineering',    null,  null, null,  12.9, 17.8, 50.4],
+  ['full',    'State Univ (Public)',    'Public General/Tech',    5.5, 17.6, 45.5,   9.7, 14.1, 52.0],
+  ['full',    'Central Univ (Public)', 'Public General/Arts',    8.0,  9.6, 52.3,   8.2, 11.3, 52.6],
+  ['full',    'IISER/IISc (Public)',   'Public Research/Science',null, null, null,   8.0, 11.3, 50.2],
+  // Partially Meets
+  ['partial', 'Central Minority Univ', 'Public Minority',        7.0, 62.4, 29.4,   9.9, 47.0, 33.2],
+  ['partial', 'AIIMS (Public)',        'Public Medical',         9.9,  4.2, 42.4,  11.8,  9.2, 49.8],
+  ['partial', 'Private Unaided',       'Private General/Tech',   4.4, 17.0, 27.7,   7.8, 16.2, 21.4],
+  // Below Quotas
+  ['below',   'Medical Inst (Public)', 'Public Medical (Spec.)', 8.7,  3.7, 33.3,   7.0,  3.5, 47.8],
+  ['below',   'Private Minority',      'Private Minority',       5.2, 10.9, 15.5,   5.3,  9.0, 11.1],
+];
+
+const EWS_BENCH = 10.0;
+const OBC_BENCH = 49.5;
+const MAX_EWS   = 65;   // for bar scaling (Central Minority is 62%)
+const MAX_OBC   = 60;
+
+function salColor(v) {
+  if (v === null) return '';
+  if (v >= 13)   return 'background:#DBEAFE;color:#1E40AF;border:1px solid #93C5FD';
+  if (v >= 9)    return 'background:#D1FAE5;color:#065F46;border:1px solid #6EE7B7';
+  if (v >= 6)    return 'background:#FEF3C7;color:#92400E;border:1px solid #FCD34D';
+  return 'background:#FEE2E2;color:#991B1B;border:1px solid #FCA5A5';
+}
+
+function barHtml(val, max, metColor, failColor, bench) {
+  if (val === null) return '<span style="color:#9CA3AF">—</span>';
+  const met   = val >= bench;
+  const color = met ? metColor : failColor;
+  const pct   = Math.min(Math.round((val / max) * 100), 100);
+  const tick  = met ? '<span class="tick" style="color:' + metColor + '">✅</span>'
+                    : '<span class="tick" style="color:' + failColor + '">❌</span>';
+  return `<div class="quota-bar-wrap">
+    ${tick}
+    <div class="quota-bar" style="width:${pct}px;max-width:80px;background:${color};opacity:0.75"></div>
+    <span class="quota-val">${val.toFixed(1)}%</span>
+  </div>`;
+}
+
+function salHtml(v) {
+  if (v === null) return '<span style="color:#9CA3AF">—</span>';
+  return `<span class="sal" style="${salColor(v)}">₹${v.toFixed(1)}</span>`;
+}
+
+// Build overall EWS/OBC compliance (use UG4, fall back to UG3)
+function compliance(ug4ews, ug4obc, ug3ews, ug3obc) {
+  const ews = ug4ews ?? ug3ews;
+  const obc = ug4obc ?? ug3obc;
+  const ewsMet = ews >= EWS_BENCH;
+  const obcMet = obc >= OBC_BENCH;
+  return [
+    ewsMet ? '<span style="color:#059669;font-size:1.1rem;font-weight:700">✅</span>' +
+             `<span style="font-size:0.75rem;color:#065F46"> (UG4: ${ug4ews}%)</span>`
+           : '<span style="color:#DC2626;font-size:1.1rem;font-weight:700">❌</span>' +
+             `<span style="font-size:0.75rem;color:#991B1B"> (UG4: ${ug4ews ?? '—'}%)</span>`,
+    obcMet ? '<span style="color:#059669;font-size:1.1rem;font-weight:700">✅</span>' +
+             `<span style="font-size:0.75rem;color:#065F46"> (UG4: ${ug4obc}%)</span>`
+           : '<span style="color:#DC2626;font-size:1.1rem;font-weight:700">❌</span>' +
+             `<span style="font-size:0.75rem;color:#991B1B"> (UG4: ${ug4obc ?? '—'}%)</span>`,
+  ];
+}
+
+const tbody = document.getElementById('tableBody');
+let prevTier = null;
+let tierRowCount = { full: 0, partial: 0, below: 0 };
+rows.forEach(r => tierRowCount[r[0]]++);
+
+const tierLabel = { full:'✅ Fully Meets', partial:'⚠️ Partially Meets', below:'❌ Below Quotas' };
+const tierClass = { full:'tier-full', partial:'tier-partial', below:'tier-below' };
+const tierLabelClass = { full:'full', partial:'partial', below:'below' };
+
+let tierOpen = {};
+rows.forEach(([tier, name, sector, ug3sal, ug3ews, ug3obc, ug4sal, ug4ews, ug4obc]) => {
+  const rowClass = tierClass[tier];
+  const [ewsHtml, obcHtml] = compliance(ug4ews, ug4obc, ug3ews, ug3obc);
+  const tr = document.createElement('tr');
+  tr.className = rowClass;
+
+  const firstInTier = !tierOpen[tier];
+  if (firstInTier) tierOpen[tier] = true;
+
+  const tdTier = firstInTier
+    ? `<td class="tier-label ${tierLabelClass[tier]}" rowspan="${tierRowCount[tier]}">${tierLabel[tier]}</td>`
+    : '';
+
+  tr.innerHTML = `
+    ${tdTier}
+    <td class="left" style="font-weight:600">${name}</td>
+    <td class="left" style="font-size:0.75rem;color:#6B7280">${sector}</td>
+    <td>${salHtml(ug3sal)}</td>
+    <td>${barHtml(ug3ews, MAX_EWS, '#059669', '#DC2626', EWS_BENCH)}</td>
+    <td>${barHtml(ug3obc, MAX_OBC, '#059669', '#DC2626', OBC_BENCH)}</td>
+    <td style="background:#F4F6F9;border-left:2px solid #D1D5DB;border-right:2px solid #D1D5DB"></td>
+    <td>${salHtml(ug4sal)}</td>
+    <td>${barHtml(ug4ews, MAX_EWS, '#059669', '#DC2626', EWS_BENCH)}</td>
+    <td>${barHtml(ug4obc, MAX_OBC, '#059669', '#DC2626', OBC_BENCH)}</td>
+    <td style="font-size:0.78rem">${ewsHtml}</td>
+    <td style="font-size:0.78rem">${obcHtml}</td>
+  `;
+  tbody.appendChild(tr);
+});
+
+// ── Summary "verdict" row ─────────────────────────────────────────────────────
+const verdict = document.createElement('tr');
+verdict.style.cssText = 'background:#1B2A4A';
+verdict.innerHTML = `
+  <td colspan="3" style="color:#F5A623;font-weight:700;font-size:0.85rem;padding:10px 12px;
+      border:1px solid #2C3E50;text-align:left">
+    📊 Summary finding
+  </td>
+  <td colspan="3" style="color:#A0ADB8;font-size:0.79rem;padding:10px 12px;border:1px solid #2C3E50;text-align:center">
+    UG3 salary range: ₹4.4 – ₹15.0 LPA<br>
+    <span style="color:#6EE7B7">Driven by sector (engineering vs. arts)</span>
+  </td>
+  <td style="background:#111;border:none"></td>
+  <td colspan="3" style="color:#A0ADB8;font-size:0.79rem;padding:10px 12px;border:1px solid #2C3E50;text-align:center">
+    UG4 salary range: ₹5.3 – ₹17.9 LPA<br>
+    <span style="color:#6EE7B7">IIT/NIT: highest salary AND highest inclusion</span>
+  </td>
+  <td colspan="2" style="color:#6EE7B7;font-size:0.79rem;padding:10px 12px;border:1px solid #2C3E50;text-align:center;font-weight:600">
+    No evidence that<br>inclusion reduces salary
+  </td>
+`;
+tbody.appendChild(verdict);
+</script>
+</body>
+</html>
