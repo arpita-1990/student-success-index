@@ -200,6 +200,14 @@ def build_choropleth(metrics_df: pd.DataFrame) -> str:
 
     return f"""
     <script src=\"https://cdn.plot.ly/plotly-2.32.0.min.js\"></script>
+    <div class=\"map-toolbar\">
+      <div class=\"map-control-label\">Select metric</div>
+      <div class=\"map-controls\">
+        <button type=\"button\" class=\"metric-btn active\" data-metric-index=\"0\">Non-graduation %</button>
+        <button type=\"button\" class=\"metric-btn\" data-metric-index=\"1\">Placement %</button>
+        <button type=\"button\" class=\"metric-btn\" data-metric-index=\"2\">Higher education %</button>
+      </div>
+    </div>
     <div id=\"india-heatmap\" style=\"height:760px;\"></div>
     <script>
       const GEOJSON_URL = {geojson_url_json};
@@ -207,7 +215,7 @@ def build_choropleth(metrics_df: pd.DataFrame) -> str:
       const METRICS = {metrics_json};
       const METRIC_SPECS = [
         {{ key: 'non_graduation_pct', label: 'Non-graduation %', colorscale: 'YlOrRd', reversescale: true }},
-        {{ key: 'placement_pct', label: 'Placement %', colorscale: 'Blues', reversescale: true }},
+        {{ key: 'placement_pct', label: 'Placement %', colorscale: 'Blues', reversescale: false }},
         {{ key: 'higher_education_pct', label: 'Higher education %', colorscale: 'Purples', reversescale: false }}
       ];
 
@@ -256,6 +264,13 @@ def build_choropleth(metrics_df: pd.DataFrame) -> str:
         return visible;
       }});
 
+      function setActiveMetric(idx) {{
+        Plotly.restyle('india-heatmap', 'visible', visibilityMaps[idx]);
+        document.querySelectorAll('.metric-btn').forEach((btn, i) => {{
+          btn.classList.toggle('active', i === idx);
+        }});
+      }}
+
       const layout = {{
         paper_bgcolor: '#ffffff',
         plot_bgcolor: '#ffffff',
@@ -268,17 +283,8 @@ def build_choropleth(metrics_df: pd.DataFrame) -> str:
         }},
         annotations: [{{
           text: 'Gray states/UTs = no available mapped university outcome data',
-          x: 0.02, y: 1.04, xref: 'paper', yref: 'paper', showarrow: false,
+          x: 0.02, y: 1.05, xref: 'paper', yref: 'paper', showarrow: false,
           font: {{ size: 12, color: '#6B7280' }}
-        }}],
-        updatemenus: [{{
-          type: 'buttons', direction: 'right', x: 0.02, y: 1.16, showactive: true,
-          bgcolor: '#F3F4F6', bordercolor: '#D1D5DB',
-          buttons: METRIC_SPECS.map((spec, i) => ({{
-            label: spec.label,
-            method: 'update',
-            args: [{{ visible: visibilityMaps[i] }}]
-          }}))
         }}],
         geo: {{
           visible: false,
@@ -293,6 +299,12 @@ def build_choropleth(metrics_df: pd.DataFrame) -> str:
       fetch(GEOJSON_URL)
         .then(resp => resp.json())
         .then(geojson => Plotly.newPlot('india-heatmap', buildTraces(geojson), layout, {{ responsive: true, displayModeBar: true }}))
+        .then(() => {{
+          document.querySelectorAll('.metric-btn').forEach((btn) => {{
+            btn.addEventListener('click', () => setActiveMetric(Number(btn.dataset.metricIndex)));
+          }});
+          setActiveMetric(0);
+        }})
         .catch(err => {{
           document.getElementById('india-heatmap').innerHTML = '<div style="padding:24px;color:#B91C1C">Map failed to load. Please refresh the page.</div>';
           console.error(err);
@@ -350,6 +362,12 @@ def build_html(metrics_df: pd.DataFrame, chart_html: str) -> str:
   .section {{ background: white; border-radius: 14px; padding: 16px; box-shadow: 0 2px 12px rgba(20,35,60,.08); margin-top: 18px; }}
   .section h2 {{ margin: 0 0 6px; color: #1B2A4A; font-size: 1.1rem; }}
   .section p {{ margin: 0 0 10px; color: #5b6472; font-size: 0.9rem; line-height: 1.55; }}
+  .map-toolbar {{ display:flex; flex-wrap:wrap; align-items:center; gap:12px; margin: 8px 0 8px; }}
+  .map-control-label {{ font-size: 0.88rem; font-weight: 600; color: #374151; }}
+  .map-controls {{ display:flex; flex-wrap:wrap; gap:10px; }}
+  .metric-btn {{ border:1px solid #CBD5E1; background: linear-gradient(180deg, #FFFFFF, #F3F4F6); color:#1F2937; border-radius:999px; padding:9px 14px; font-size:0.86rem; font-weight:600; cursor:pointer; transition:all .18s ease; box-shadow:0 1px 4px rgba(0,0,0,.06); }}
+  .metric-btn:hover {{ transform: translateY(-1px); border-color:#93C5FD; box-shadow:0 4px 10px rgba(59,130,246,.14); }}
+  .metric-btn.active {{ background: linear-gradient(135deg, #1B2A4A, #2563EB); color:#fff; border-color:#1D4ED8; box-shadow:0 6px 14px rgba(37,99,235,.22); }}
   .metric-table {{ width: 100%; border-collapse: collapse; font-size: 0.9rem; margin-top: 8px; }}
   .metric-table th {{ background: #1B2A4A; color: #F5A623; padding: 10px; text-align: left; }}
   .metric-table td {{ border: 1px solid #E5E7EB; padding: 9px 10px; }}
