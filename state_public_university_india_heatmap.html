@@ -18,13 +18,17 @@
   .section { background: white; border-radius: 14px; padding: 16px; box-shadow: 0 2px 12px rgba(20,35,60,.08); margin-top: 18px; }
   .section h2 { margin: 0 0 6px; color: #1B2A4A; font-size: 1.1rem; }
   .section p { margin: 0 0 10px; color: #5b6472; font-size: 0.9rem; line-height: 1.55; }
-  .metric-row { margin-top: 18px; }
-  .metric-row:first-of-type { margin-top: 8px; }
-  .metric-header h3 { margin: 0 0 4px; color: #17324F; font-size: 1rem; }
-  .metric-header p { margin: 0 0 10px; color: #6B7280; font-size: 0.84rem; }
+  .metric-row { margin-top: 18px; padding-top: 8px; border-top: 1px solid #EEF2F7; }
+  .metric-row:first-of-type { margin-top: 8px; padding-top: 0; border-top: 0; }
+  .metric-header h3 { margin: 4px 0 4px; color: #17324F; font-size: 1rem; }
+  .metric-header p { margin: 0 0 12px; color: #6B7280; font-size: 0.84rem; }
+  .metric-pill { display:inline-flex; align-items:center; padding:5px 10px; border-radius:999px; font-size:0.74rem; font-weight:700; letter-spacing:.02em; }
+  .metric-pill-blue { background:#DBEAFE; color:#1D4ED8; }
+  .metric-pill-amber { background:#FEF3C7; color:#B45309; }
+  .metric-pill-purple { background:#EDE9FE; color:#6D28D9; }
   .dual-map-grid { display:grid; grid-template-columns: 1fr 1fr; gap:16px; }
-  .map-card { background:#FBFDFF; border:1px solid #E5E7EB; border-radius:12px; padding:12px; box-shadow: inset 0 1px 0 rgba(255,255,255,.8); }
-  .map-card-title { color:#1B2A4A; font-size:0.95rem; font-weight:700; margin-bottom:6px; }
+  .map-card { background:linear-gradient(180deg, #FBFDFF, #F8FAFC); border:1px solid #E5E7EB; border-radius:14px; padding:12px; box-shadow: 0 6px 18px rgba(20,35,60,.05); }
+  .map-card-title { color:#1B2A4A; font-size:0.95rem; font-weight:800; margin-bottom:8px; padding-bottom:6px; border-bottom:1px solid #EDF2F7; }
   .mini-map { height:420px; }
   .metric-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; margin-top: 8px; }
   .metric-table th { background: #1B2A4A; color: #F5A623; padding: 10px; text-align: left; }
@@ -59,6 +63,7 @@
 
     <div class="metric-row">
       <div class="metric-header">
+        <div class="metric-pill metric-pill-blue">Placement comparison</div>
         <h3>Placement percentage</h3>
         <p>Darker blue indicates better placement outcomes. Gray states and UTs indicate no available data.</p>
       </div>
@@ -70,6 +75,7 @@
 
     <div class="metric-row">
       <div class="metric-header">
+        <div class="metric-pill metric-pill-amber">Risk comparison</div>
         <h3>Non-graduation percentage</h3>
         <p>This is the risk view. Gray states and UTs indicate no available data.</p>
       </div>
@@ -81,6 +87,7 @@
 
     <div class="metric-row">
       <div class="metric-header">
+        <div class="metric-pill metric-pill-purple">Progression comparison</div>
         <h3>Higher education percentage</h3>
         <p>This shows the share of graduates moving into further studies. Gray states and UTs indicate no available data.</p>
       </div>
@@ -104,29 +111,20 @@
         { key: 'higher_education_pct', label: 'Higher education %', colorscale: 'Purples', reversescale: false, ids: { ug3: 'map-he-ug3', ug4: 'map-he-ug4' } }
       ];
 
-      function baseLayout(titleText) {
+      function baseLayout() {
         return {
           paper_bgcolor: '#ffffff',
           plot_bgcolor: '#ffffff',
-          margin: { l: 8, r: 8, t: 8, b: 8 },
+          margin: { l: 8, r: 34, t: 4, b: 8 },
           height: 420,
           geo: {
             visible: false,
             bgcolor: 'rgba(0,0,0,0)',
             projection: { type: 'mercator' },
-            center: { lat: 22.8, lon: 79.0 },
+            center: { lat: 22.8, lon: 76.8 },
             lataxis: { range: [5, 38.5] },
-            lonaxis: { range: [67, 98] }
-          },
-          annotations: [{
-            text: titleText,
-            x: 0.02,
-            y: 1.04,
-            xref: 'paper',
-            yref: 'paper',
-            showarrow: false,
-            font: { size: 14, color: '#1B2A4A' }
-          }]
+            lonaxis: { range: [66.5, 100] }
+          }
         };
       }
 
@@ -157,7 +155,7 @@
           zmin,
           zmax,
           marker: { line: { color: '#FFFFFF', width: 0.8 } },
-          colorbar: { title: spec.label, thickness: 10, len: 0.65 },
+          colorbar: { title: spec.label, thickness: 10, len: 0.62, x: 1.03, y: 0.5 },
           customdata: metricRows.map(row => [row.state, row.institution_count || row.ug3_institution_count || row.ug4_institution_count, row.graduates_represented || row.ug3_graduates_represented || row.ug4_graduates_represented]),
           hovertemplate: '<b>%{customdata[0]}</b><br>' + spec.label + ': <b>%{z:.1f}%</b><br>Institutions covered: %{customdata[1]}<br>Graduates represented: %{customdata[2]:,}<extra></extra>'
         };
@@ -180,7 +178,7 @@
             Plotly.newPlot(
               spec.ids[programKey],
               buildMapTraces(program.rows, spec, zmin, zmax, geojson),
-              baseLayout(program.label),
+              baseLayout(),
               { responsive: true, displayModeBar: false }
             );
           });
