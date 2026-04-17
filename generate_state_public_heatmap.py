@@ -207,7 +207,7 @@ def build_choropleth(metrics_df: pd.DataFrame) -> str:
       const METRICS = {metrics_json};
       const METRIC_SPECS = [
         {{ key: 'non_graduation_pct', label: 'Non-graduation %', colorscale: 'YlOrRd', reversescale: true }},
-        {{ key: 'placement_pct', label: 'Placement %', colorscale: 'Blues', reversescale: false }},
+        {{ key: 'placement_pct', label: 'Placement %', colorscale: 'Blues', reversescale: true }},
         {{ key: 'higher_education_pct', label: 'Higher education %', colorscale: 'Purples', reversescale: false }}
       ];
 
@@ -268,11 +268,11 @@ def build_choropleth(metrics_df: pd.DataFrame) -> str:
         }},
         annotations: [{{
           text: 'Gray states/UTs = no available mapped university outcome data',
-          x: 0.02, y: 1.02, xref: 'paper', yref: 'paper', showarrow: false,
+          x: 0.02, y: 1.04, xref: 'paper', yref: 'paper', showarrow: false,
           font: {{ size: 12, color: '#6B7280' }}
         }}],
         updatemenus: [{{
-          type: 'buttons', direction: 'right', x: 0.02, y: 1.10, showactive: true,
+          type: 'buttons', direction: 'right', x: 0.02, y: 1.16, showactive: true,
           bgcolor: '#F3F4F6', bordercolor: '#D1D5DB',
           buttons: METRIC_SPECS.map((spec, i) => ({{
             label: spec.label,
