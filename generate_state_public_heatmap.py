@@ -193,110 +193,112 @@ def build_choropleth(metrics_df: pd.DataFrame) -> str:
     geojson = requests.get(GEOJSON_URL, headers={"User-Agent": "Mozilla/5.0"}, timeout=60).json()
     all_map_states = sorted(feature["properties"]["NAME_1"] for feature in geojson["features"])
 
-    metric_specs = [
-        ("non_graduation_pct", "Non-graduation %", "YlOrRd", True),
-        ("placement_pct", "Placement %", "Blues", False),
-        ("higher_education_pct", "Higher education %", "Purples", False),
-    ]
+    metrics = metrics_df.where(pd.notna(metrics_df), None).to_dict(orient="records")
+    metrics_json = json.dumps(metrics)
+    states_json = json.dumps(all_map_states)
+    geojson_url_json = json.dumps(GEOJSON_URL)
 
-    fig = go.Figure()
-    fig.add_trace(
-        go.Choropleth(
-            geojson=geojson,
-            featureidkey="properties.NAME_1",
-            locations=all_map_states,
-            z=[0] * len(all_map_states),
-            locationmode="geojson-id",
-            colorscale=[[0, "#E5E7EB"], [1, "#E5E7EB"]],
-            showscale=False,
-            marker_line_color="#FFFFFF",
-            marker_line_width=0.8,
-            hovertemplate="<b>%{location}</b><br>No mapped state public university outcome data available<extra></extra>",
-            visible=True,
-        )
-    )
+    return f"""
+    <script src=\"https://cdn.plot.ly/plotly-2.32.0.min.js\"></script>
+    <div id=\"india-heatmap\" style=\"height:760px;\"></div>
+    <script>
+      const GEOJSON_URL = {geojson_url_json};
+      const ALL_MAP_STATES = {states_json};
+      const METRICS = {metrics_json};
+      const METRIC_SPECS = [
+        {{ key: 'non_graduation_pct', label: 'Non-graduation %', colorscale: 'YlOrRd', reversescale: true }},
+        {{ key: 'placement_pct', label: 'Placement %', colorscale: 'Blues', reversescale: false }},
+        {{ key: 'higher_education_pct', label: 'Higher education %', colorscale: 'Purples', reversescale: false }}
+      ];
 
-    for i, (col, label, scale, rev) in enumerate(metric_specs):
-        custom = metrics_df[["state", "institution_count", "graduates_represented", "universities"]].values
-        hover = (
-            "<b>%{customdata[0]}</b><br>"
-            + label
-            + ": <b>%{z:.1f}%</b><br>"
-            + "Institutions covered: %{customdata[1]}<br>"
-            + "Graduates represented: %{customdata[2]:,}<br>"
-            + "<extra></extra>"
-        )
-        fig.add_trace(
-            go.Choropleth(
-                geojson=geojson,
-                featureidkey="properties.NAME_1",
-                locations=metrics_df["map_state"],
-                z=metrics_df[col],
-                locationmode="geojson-id",
-                colorscale=scale,
-                reversescale=rev,
-                marker_line_color="#FFFFFF",
-                marker_line_width=0.8,
-                colorbar_title=label,
-                customdata=custom,
-                hovertemplate=hover,
-                visible=(i == 0),
-            )
-        )
+      function buildTraces(geojson) {{
+        const noDataTrace = {{
+          type: 'choropleth',
+          geojson,
+          featureidkey: 'properties.NAME_1',
+          locations: ALL_MAP_STATES,
+          z: ALL_MAP_STATES.map(() => 0),
+          locationmode: 'geojson-id',
+          colorscale: [[0, '#E5E7EB'], [1, '#E5E7EB']],
+          showscale: false,
+          marker: {{ line: {{ color: '#FFFFFF', width: 0.8 }} }},
+          hovertemplate: '<b>%{{location}}</b><br>No mapped state public university outcome data available<extra></extra>',
+          visible: true
+        }};
 
-    fig.update_geos(
-        visible=False,
-        bgcolor="rgba(0,0,0,0)",
-        projection_type="mercator",
-        center={"lat": 22.8, "lon": 79.0},
-        lataxis_range=[5, 38.5],
-        lonaxis_range=[67, 98],
-    )
+        const metricTraces = METRIC_SPECS.map((spec, i) => {{
+          const locations = METRICS.map(row => row.map_state);
+          const z = METRICS.map(row => row[spec.key]);
+          const customdata = METRICS.map(row => [row.state, row.institution_count, row.graduates_represented, row.universities]);
+          return {{
+            type: 'choropleth',
+            geojson,
+            featureidkey: 'properties.NAME_1',
+            locations,
+            z,
+            locationmode: 'geojson-id',
+            colorscale: spec.colorscale,
+            reversescale: spec.reversescale,
+            marker: {{ line: {{ color: '#FFFFFF', width: 0.8 }} }},
+            colorbar: {{ title: spec.label }},
+            customdata,
+            hovertemplate: '<b>%{{customdata[0]}}</b><br>' + spec.label + ': <b>%{{z:.1f}}%</b><br>Institutions covered: %{{customdata[1]}}<br>Graduates represented: %{{customdata[2]:,}}<extra></extra>',
+            visible: i === 0
+          }};
+        }});
 
-    visibility_maps = []
-    for i in range(len(metric_specs)):
-        visible = [True] + [False] * len(metric_specs)
-        visible[i + 1] = True
-        visibility_maps.append(visible)
+        return [noDataTrace, ...metricTraces];
+      }}
 
-    fig.update_layout(
-        paper_bgcolor="#ffffff",
-        plot_bgcolor="#ffffff",
-        margin=dict(l=10, r=10, t=70, b=10),
-        height=760,
-        title=dict(
-            text="India heat map — state public university outcomes",
-            x=0.02,
-            font=dict(size=22, color="#1B2A4A"),
-        ),
-        annotations=[
-            dict(
-                text="Gray states/UTs = no available mapped university outcome data",
-                x=0.02,
-                y=1.02,
-                xref="paper",
-                yref="paper",
-                showarrow=False,
-                font=dict(size=12, color="#6B7280"),
-            )
-        ],
-        updatemenus=[
-            dict(
-                type="buttons",
-                direction="right",
-                x=0.02,
-                y=1.10,
-                showactive=True,
-                bgcolor="#F3F4F6",
-                bordercolor="#D1D5DB",
-                buttons=[
-                    dict(label=label, method="update", args=[{"visible": visibility_maps[i]}])
-                    for i, (_, label, _, _) in enumerate(metric_specs)
-                ],
-            )
-        ],
-    )
-    return fig.to_html(full_html=False, include_plotlyjs="cdn", config={"responsive": True, "displayModeBar": True})
+      const visibilityMaps = METRIC_SPECS.map((_, i) => {{
+        const visible = [true, false, false, false];
+        visible[i + 1] = true;
+        return visible;
+      }});
+
+      const layout = {{
+        paper_bgcolor: '#ffffff',
+        plot_bgcolor: '#ffffff',
+        margin: {{ l: 10, r: 10, t: 70, b: 10 }},
+        height: 760,
+        title: {{
+          text: 'India heat map — state public university outcomes',
+          x: 0.02,
+          font: {{ size: 22, color: '#1B2A4A' }}
+        }},
+        annotations: [{{
+          text: 'Gray states/UTs = no available mapped university outcome data',
+          x: 0.02, y: 1.02, xref: 'paper', yref: 'paper', showarrow: false,
+          font: {{ size: 12, color: '#6B7280' }}
+        }}],
+        updatemenus: [{{
+          type: 'buttons', direction: 'right', x: 0.02, y: 1.10, showactive: true,
+          bgcolor: '#F3F4F6', bordercolor: '#D1D5DB',
+          buttons: METRIC_SPECS.map((spec, i) => ({{
+            label: spec.label,
+            method: 'update',
+            args: [{{ visible: visibilityMaps[i] }}]
+          }}))
+        }}],
+        geo: {{
+          visible: false,
+          bgcolor: 'rgba(0,0,0,0)',
+          projection: {{ type: 'mercator' }},
+          center: {{ lat: 22.8, lon: 79.0 }},
+          lataxis: {{ range: [5, 38.5] }},
+          lonaxis: {{ range: [67, 98] }}
+        }}
+      }};
+
+      fetch(GEOJSON_URL)
+        .then(resp => resp.json())
+        .then(geojson => Plotly.newPlot('india-heatmap', buildTraces(geojson), layout, {{ responsive: true, displayModeBar: true }}))
+        .catch(err => {{
+          document.getElementById('india-heatmap').innerHTML = '<div style="padding:24px;color:#B91C1C">Map failed to load. Please refresh the page.</div>';
+          console.error(err);
+        }});
+    </script>
+    """
 
 
 def build_html(metrics_df: pd.DataFrame, chart_html: str) -> str:
