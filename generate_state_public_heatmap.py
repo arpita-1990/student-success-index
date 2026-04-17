@@ -455,9 +455,16 @@ def main() -> None:
     ug3 = extract_latest_records(UG3_CSV, "UG 3-Year")
     ug4 = extract_latest_records(UG4_CSV, "UG 4-Year")
 
-    ug3_metrics = aggregate_state_metrics(ug3, "ug3_")
-    ug4_metrics = aggregate_state_metrics(ug4, "ug4_")
-    metrics_df = pd.merge(ug3_metrics, ug4_metrics, on=["state", "map_state"], how="outer").sort_values("state").reset_index(drop=True)
+    ug3_metrics = aggregate_state_metrics(ug3)
+    ug4_metrics = aggregate_state_metrics(ug4)
+
+    ug3_export = ug3_metrics.rename(
+        columns={c: f"ug3_{c}" for c in ug3_metrics.columns if c not in {"state", "map_state"}}
+    )
+    ug4_export = ug4_metrics.rename(
+        columns={c: f"ug4_{c}" for c in ug4_metrics.columns if c not in {"state", "map_state"}}
+    )
+    metrics_df = pd.merge(ug3_export, ug4_export, on=["state", "map_state"], how="outer").sort_values("state").reset_index(drop=True)
 
     metrics_df.to_csv(OUT_METRICS_CSV, index=False)
     lookup_table().to_csv(OUT_LOOKUP_CSV, index=False)
